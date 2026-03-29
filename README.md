@@ -1,10 +1,5 @@
 ## TODO:
 
-- [ ] Assets
-- [ ] Level editor
-- [ ] Tilemap
-- [ ] Player
-
 genre: platformer
 rule: world falls apart
 setting: jungle/dungeon
@@ -23,6 +18,7 @@ vfx: shockwaves, light sources, slomo, particles, distortion shockwaves, slime
 
 extra:
 pet
+vim keybindings?
 
 coins/collectables
 

@@ -75,10 +75,21 @@ class App:
         self.tile_map = TileMap(self)
         self.tile_map.load("data/maps/0.json")
 
-        self.player = Player(self, [4, 7], [10, 10])
+        self.player = Player(self, [5, 8], [10, 10])
+        
+        self.g = False
+        self.s = False
+        self.j = False
+        self.dir = 1
 
     # put all the game stuff here
     def update(self):
+        # if self.s:
+        #     self.player.speed += 0.005 * self.dt * self.dir
+        # if self.g:
+        #     self.player.gravity += 0.001 * self.dt * self.dir
+        # if self.j:
+        #     self.player.jump_height += 0.01 * self.dt * self.dir
         # update delta time
         self.dt = (time.time() - self.last_time) * 60
         self.last_time = time.time()
@@ -150,6 +161,19 @@ class App:
                         self.player.controls["left"] = True
                     elif event.key == pygame.K_RETURN:
                         self.menu_screen = False
+                    # elif event.key == pygame.K_u:
+                    #     self.s = True
+                    # elif event.key == pygame.K_j:
+                    #     self.j = True
+                    # elif event.key == pygame.K_g:
+                    #     self.g = True
+                    # elif event.key == pygame.K_k:
+                    #     if self.dir == 1:
+                    #         self.dir = -1
+                    #     else:
+                    #         self.dir = 1
+                    # elif event.key == pygame.K_p:
+                    #     print(f"Speed: {self.player.speed}, Gravity: {self.player.gravity}, JumpH: {self.player.jump_height}")
                 if event.type == pygame.KEYUP:
                     if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE}:
                         self.player.controls["up"] = False
@@ -159,6 +183,12 @@ class App:
                         self.player.controls["right"] = False
                     elif event.key in {pygame.K_LEFT, pygame.K_a}:
                         self.player.controls["left"] = False
+                    # elif event.key == pygame.K_u:
+                    #     self.s = False
+                    # elif event.key == pygame.K_j:
+                    #     self.j = False
+                    # elif event.key == pygame.K_g:
+                    #     self.g = False
 
             # update game
             self.update()

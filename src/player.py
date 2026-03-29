@@ -24,9 +24,9 @@ class Player:
         self.angle_vel = 0
         self.ad = 120
         self.death_time = 120
-        self.speed = 0.6
-        self.jump_height = 3
-        self.gravity = 0.23
+        self.speed = 0.9
+        self.jump_height = 3.07
+        self.gravity = 0.22
 
     def get_rect(self):
         return pygame.Rect(self.pos.x, self.pos.y, self.dimensions.x, self.dimensions.y)
