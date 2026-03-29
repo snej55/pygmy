@@ -18,7 +18,12 @@ class Player:
         self.movement = pygame.Vector2(0, 0)
         self.last_movement = pygame.Vector2(0, 0)
 
+        self.idle = Anim(self.app.assets["player/idle"], 0.3)
+        self.run = Anim(self.app.assets["player/run"], 0.6)
+        self.jump = Anim(self.app.assets["player/jump"], 0.2, True)
+        self.land = Anim(self.app.assets["player/land"], 0.2, False)
         self.flip = False
+        self.grounded = 0
 
         self.water = False
         self.angle = 0
@@ -41,6 +46,7 @@ class Player:
         self.collisions = {"right": False, "left": False, "up": False, "down": False}
         self.ad += dt
         if self.ad > self.death_time:
+            self.handle_animation(dt)
             fm = pygame.Vector2(self.movement.x * dt + self.rebound.x * dt, self.movement.y * dt + self.rebound.y * dt)
 
             self.pos.x += fm.x
@@ -150,6 +156,26 @@ class Player:
                         self.movement[0] += self.dashing * 0.01
                     else:
                         self.movement[0] += self.dashing * 0.001
+    
+    def handle_animation(self, dt):
+        if self.falling > 5:
+            self.jump.update(dt)
+            self.idle.reset()
+            self.run.reset()
+            self.land.reset()
+            self.grounded = 0
+        elif self.grounded < len(self.land.animation) / self.land.speed:
+            self.land.update(dt)
+            self.jump.reset()
+            self.run.reset()
+            self.idle.reset()
+        elif self.controls["left"] or self.controls["right"]:
+            self.run.update(dt)
+            self.idle.reset()
+        else:
+            self.idle.update(dt)
+            self.run.reset()
+        self.grounded += dt
 
     def die():
         pass
@@ -164,4 +190,14 @@ class Player:
                 self.app.screen_shake = max(4, self.app.screen_shake)
 
     def draw(self, surf, scroll):
-        pygame.draw.rect(surf, (255, 0, 255), (self.pos.x - scroll[0], self.pos.y - scroll[1], self.dimensions.x, self.dimensions.y))
+        anim = None
+        if self.falling > 5:
+            anim = self.jump
+        elif self.grounded < len(self.land.animation) / self.land.speed:
+            anim = self.land
+        elif self.controls["left"] or self.controls["right"]:
+            anim = self.run
+        else:
+            anim = self.idle
+        anim.flip = self.flip
+        anim.draw(surf, scroll, (self.pos.x - 1, self.pos.y))

@@ -69,7 +69,10 @@ class App:
         # load assets
         self.assets = {
             "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
-            "player/idle": load_animation("player/idle.png", 8, 8, 6)
+            "player/idle": load_animation("player/idle.png", 8, 8, 6),
+            "player/run": load_animation("player/run.png", 8, 8, 4),
+            "player/jump": load_animation("player/jump.png", 8, 8, 3),
+            "player/land": load_animation("player/land.png", 8, 8, 4)
         }
 
         self.scroll = pygame.Vector2(0, 0)
