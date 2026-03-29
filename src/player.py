@@ -22,6 +22,7 @@ class Player:
         self.run = Anim(self.app.assets["player/run"], 0.6)
         self.jump = Anim(self.app.assets["player/jump"], 0.2, True)
         self.land = Anim(self.app.assets["player/land"], 0.2, False)
+        self.wall_jump = Anim(self.app.assets["player/wall_jump"], 0.5, False)
         self.flip = False
         self.grounded = 0
 
@@ -38,6 +39,7 @@ class Player:
         self.wall_timer = 0
         self.rebound = pygame.Vector2(0, 0)
         self.dashing = 0
+        self.sliding = 100
 
     def get_rect(self):
         return pygame.Rect(self.pos.x, self.pos.y, self.dimensions.x, self.dimensions.y)
@@ -46,6 +48,7 @@ class Player:
         self.collisions = {"right": False, "left": False, "up": False, "down": False}
         self.ad += dt
         if self.ad > self.death_time:
+            self.sliding += dt
             self.handle_animation(dt)
             fm = pygame.Vector2(self.movement.x * dt + self.rebound.x * dt, self.movement.y * dt + self.rebound.y * dt)
 
@@ -106,6 +109,7 @@ class Player:
             self.wall_slide = False
             if (self.collisions["left"] or self.collisions["right"]) and self.falling > 8:
                 self.wall_slide = True
+                self.sliding = 0
                 self.movement.y = min(self.movement.y, 1.5)
                 if self.collisions["right"]:
                     self.flip = False
@@ -159,12 +163,17 @@ class Player:
     
     def handle_animation(self, dt):
         if self.falling > 5:
-            self.jump.update(dt)
+            if self.sliding < 3:
+                self.wall_jump.update(dt)
+            else:
+                self.jump.update(dt)
+                self.wall_jump.reset()
             self.idle.reset()
             self.run.reset()
             self.land.reset()
             self.grounded = 0
         elif self.grounded < len(self.land.animation) / self.land.speed:
+            self.wall_jump.reset()
             self.land.update(dt)
             self.jump.reset()
             self.run.reset()
@@ -193,6 +202,8 @@ class Player:
         anim = None
         if self.falling > 5:
             anim = self.jump
+            if self.sliding < 3:
+                anim = self.wall_jump
         elif self.grounded < len(self.land.animation) / self.land.speed:
             anim = self.land
         elif self.controls["left"] or self.controls["right"]:
