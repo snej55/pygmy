@@ -4,6 +4,7 @@ import pygame, sys, time, moderngl, array, random
 from src.util import *
 from src.tiles import *
 from src.player import *
+from pathlib import Path
 
 pygame.init()
 pygame.mixer.init()
@@ -15,6 +16,7 @@ SCROLL_LIMIT = 8
 
 class App:
     def __init__(self):
+        print(f"Running from `{get_script_path()}`")
         # no need for separate scaling, pygbag scales canvas automatically
         self.display = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
@@ -67,6 +69,7 @@ class App:
         # load assets
         self.assets = {
             "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
+            "player/idle": load_animation("player/idle.png", 8, 8, 6)
         }
 
         self.scroll = pygame.Vector2(0, 0)
@@ -159,8 +162,9 @@ class App:
                         self.player.controls["right"] = True
                     elif event.key in {pygame.K_LEFT, pygame.K_a}:
                         self.player.controls["left"] = True
-                    elif event.key == pygame.K_RETURN:
-                        self.menu_screen = False
+                    elif event.key in {pygame.K_x}:
+                        if abs(self.player.dashing) < 20:
+                            self.player.controls['dashing'] = True
                     # elif event.key == pygame.K_u:
                     #     self.s = True
                     # elif event.key == pygame.K_j:
