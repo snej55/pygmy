@@ -1,13 +1,15 @@
 # Created by Jens Kromdijk 29/03/2026
-import pygame, sys, time, moderngl, array, math
+import pygame, sys, time, moderngl, array, random
+
+from src.util import *
+from src.tiles import *
 
 pygame.init()
 pygame.mixer.init()
 
-
 # window dimensions and scaling
-WIDTH, HEIGHT = 640, 480
-SCALE = 2
+WIDTH, HEIGHT = 1200, 900
+SCALE = 4
 
 class App:
     def __init__(self):
@@ -60,16 +62,33 @@ class App:
         self.dt = 1
         self.last_time = time.time() - 1 / 60
 
+        # load assets
+        self.assets = {
+            "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE)
+        }
+
+        self.tile_map = TileMap(self)
+        self.tile_map.load("data/maps/0.json")
+
+        self.scroll = pygame.Vector2(0, 0)
+        self.screen_shake = 0
+
     # put all the game stuff here
     def update(self):
         # update delta time
         self.dt = (time.time() - self.last_time) * 60
         self.last_time = time.time()
 
-        # just a test, usually just fill it with black
-        self.screen.fill((int(255 - (math.sin(time.time()) * 125 + 125)), int(math.sin(time.time()) * 125 + 125), 0))
-        pygame.draw.rect(self.screen, (0, 0, 255), (0, 0, 10, 10))
-        pygame.draw.rect(self.screen, (0, 0, 255), (self.screen.get_width() - 10, self.screen.get_height() - 10, 10, 10))
+        screen_shake_offset = (
+            random.random() * self.screen_shake - self.screen_shake / 2,
+            random.random() * self.screen_shake - self.screen_shake / 2,
+        )
+        render_scroll = (int(self.scroll[0] + screen_shake_offset[0]), int(self.scroll[1] + screen_shake_offset[1]))
+
+        self.screen_shake = max(0, self.screen_shake - 1 * self.dt)
+        self.screen.fill((0, 0, 0))
+
+        self.tile_map.draw(self.screen, render_scroll)
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
