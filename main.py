@@ -73,7 +73,8 @@ class App:
             "player/run": load_animation("player/run.png", 8, 8, 4),
             "player/jump": load_animation("player/jump.png", 8, 8, 3),
             "player/land": load_animation("player/land.png", 8, 8, 4),
-            "player/wall_jump": load_animation("player/wall_jump.png", 8, 8, 4)
+            "player/wall_jump": load_animation("player/wall_jump.png", 8, 8, 4),
+            "spring": load_image("tiles/spring.png")
         }
 
         self.scroll = pygame.Vector2(0, 0)
@@ -103,6 +104,7 @@ class App:
         self.last_time = time.time()
 
         self.player.update(self.dt, self.tile_map)
+        self.tile_map.update_springs(self.dt, self.player)
 
         if self.player.ad > self.player.death_time:
             lookahead = 10
