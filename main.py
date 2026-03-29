@@ -3,6 +3,7 @@ import pygame, sys, time, moderngl, array, random
 
 from src.util import *
 from src.tiles import *
+from src.player import *
 
 pygame.init()
 pygame.mixer.init()
@@ -10,6 +11,7 @@ pygame.mixer.init()
 # window dimensions and scaling
 WIDTH, HEIGHT = 1200, 900
 SCALE = 4
+SCROLL_LIMIT = 8
 
 class App:
     def __init__(self):
@@ -64,20 +66,35 @@ class App:
 
         # load assets
         self.assets = {
-            "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE)
+            "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
         }
+
+        self.scroll = pygame.Vector2(0, 0)
+        self.screen_shake = 0
 
         self.tile_map = TileMap(self)
         self.tile_map.load("data/maps/0.json")
 
-        self.scroll = pygame.Vector2(0, 0)
-        self.screen_shake = 0
+        self.player = Player(self, [4, 7], [10, 10])
 
     # put all the game stuff here
     def update(self):
         # update delta time
         self.dt = (time.time() - self.last_time) * 60
         self.last_time = time.time()
+
+        self.player.update(self.dt, self.tile_map)
+
+        if self.player.ad > self.player.death_time:
+            lookahead = 10
+            if self.player.flip:
+                lookahead *= -1
+            target_scroll = [self.player.get_rect().centerx + lookahead - self.screen.get_width() * 0.5, self.player.get_rect().centery - self.screen.get_height() * 0.5]
+            
+            if abs(target_scroll[0] - self.scroll[0]) > SCROLL_LIMIT:
+                self.scroll[0] += (target_scroll[0] - self.scroll[0]) / 30 * self.dt
+            if abs(target_scroll[1] - self.scroll[0]) > SCROLL_LIMIT:
+                self.scroll[1] += (target_scroll[1] - self.scroll[1]) / 30 * self.dt
 
         screen_shake_offset = (
             random.random() * self.screen_shake - self.screen_shake / 2,
@@ -89,6 +106,7 @@ class App:
         self.screen.fill((0, 0, 0))
 
         self.tile_map.draw(self.screen, render_scroll)
+        self.player.draw(self.screen, render_scroll)
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
@@ -120,6 +138,27 @@ class App:
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
+                if event.type == pygame.KEYDOWN:
+                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE}:
+                        self.player.controls["up"] = True
+                        self.player.jumping = 0
+                    elif event.key in {pygame.K_DOWN, pygame.K_s}:
+                        self.player.controls["down"] = True
+                    elif event.key in {pygame.K_RIGHT, pygame.K_d}:
+                        self.player.controls["right"] = True
+                    elif event.key in {pygame.K_LEFT, pygame.K_a}:
+                        self.player.controls["left"] = True
+                    elif event.key == pygame.K_RETURN:
+                        self.menu_screen = False
+                if event.type == pygame.KEYUP:
+                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE}:
+                        self.player.controls["up"] = False
+                    elif event.key in {pygame.K_DOWN, pygame.K_s}:
+                        self.player.controls["down"] = False
+                    elif event.key in {pygame.K_RIGHT, pygame.K_d}:
+                        self.player.controls["right"] = False
+                    elif event.key in {pygame.K_LEFT, pygame.K_a}:
+                        self.player.controls["left"] = False
 
             # update game
             self.update()
