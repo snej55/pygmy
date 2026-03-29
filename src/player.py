@@ -16,6 +16,7 @@ class Player:
         self.controls = {"up": False, "down": False, "right": False, "left": False}
 
         self.movement = pygame.Vector2(0, 0)
+        self.last_movement = pygame.Vector2(0, 0)
 
         self.flip = False
 
@@ -26,37 +27,21 @@ class Player:
         self.death_time = 120
         self.speed = 0.9
         self.jump_height = 3.07
-        self.gravity = 0.22
+        self.gravity = 0.23
+        self.collisions = {"right": False, "left": False, "up": False, "down": False}
+        self.wall_slide = False
+        self.wall_timer = 0
+        self.rebound = pygame.Vector2(0, 0)
 
     def get_rect(self):
         return pygame.Rect(self.pos.x, self.pos.y, self.dimensions.x, self.dimensions.y)
 
     def update(self, dt, tile_map):
+        self.collisions = {"right": False, "left": False, "up": False, "down": False}
         self.ad += dt
         if self.ad > self.death_time:
             if not self.water:
-                self.falling += dt
-                self.jumping += dt
-                self.grounded += dt
-
-                if self.controls["right"]:
-                    self.movement.x += self.speed * dt
-                    self.flip = False
-                if self.controls["left"]:
-                    self.movement.x -= self.speed * dt
-                    self.flip = True
-                self.movement.x += (self.movement.x * 0.6 - self.movement.x) * dt
-
-                self.movement.y += self.gravity * dt
-                self.movement.y = min(self.movement.y, 8)
-
-                if self.falling < 5:
-                    if self.jumping < 15:
-                        self.movement.y = -self.jump_height
-                        self.falling = 6
-                        self.jumping = 30
-
-                fm = pygame.Vector2(self.movement.x * dt, self.movement.y * dt)
+                fm = pygame.Vector2(self.movement.x * dt + self.rebound.x * dt, self.movement.y * dt + self.rebound.y * dt)
 
                 self.pos.x += fm.x
                 r = self.get_rect()
@@ -64,10 +49,13 @@ class Player:
                     if r.colliderect(rect):
                         if fm.x > 0:
                             r.right = rect.left
+                            self.collisions["right"] = True
                         if fm.x < 0:
                             r.left = rect.right
+                            self.collisions["left"] = True
                         self.pos.x = r.x
                         self.movement.x = 0
+                        self.rebound.x = 0
 
                 self.pos.y += fm.y
                 r = self.get_rect()
@@ -76,13 +64,71 @@ class Player:
                         if fm.y >= 0:
                             r.bottom = rect.top
                             self.falling = 0
+                            self.collisions["down"] = True
                         elif fm.y < 0:
                             r.top = rect.bottom
+                            self.collisions["up"] = True
                         self.movement.y = 0
                         self.pos.y = r.y
-                self.dimensions = pygame.Vector2(6, 7)
+                        self.rebound.y = 0
+                
+                self.last_movement = fm.copy()
+
+                self.falling += dt
+                self.jumping += dt
+                self.grounded += dt
+
+                if self.wall_timer <= 0:
+                    if self.controls["right"]:
+                        self.movement.x += self.speed * dt
+                        self.flip = False
+                        if self.rebound.x > 0:
+                            self.rebound.x += (self.rebound.x * 0.4 - self.rebound.x) * dt
+                    if self.controls["left"]:
+                        self.movement.x -= self.speed * dt
+                        self.flip = True
+                        if self.rebound.x < 0:
+                            self.rebound.x += (self.rebound.x * 0.4 - self.rebound.x) * dt
+                self.wall_timer -= dt
+                self.movement.x += (self.movement.x * 0.65 - self.movement.x) * dt
+
+                self.rebound += (self.rebound * 0.9 - self.rebound) * dt
+
+                self.movement.y += self.gravity * dt
+                self.movement.y = min(self.movement.y, 8)
+
+                self.wall_slide = False
+                if (self.collisions["left"] or self.collisions["right"]) and self.falling > 5:
+                    self.wall_slide = True
+                    self.movement.y = min(self.movement.y, 0.9)
+                    if self.collisions["right"]:
+                        self.flip = False
+                    else:
+                        self.flip = True
+
+                if self.jumping < 15:
+                    if self.wall_slide:
+                        speed = 4
+                        height = 2.78
+                        if self.flip and self.last_movement[0] < 0:
+                            self.rebound.x = speed
+                            self.movement.y = -height
+                            self.falling = 8
+                            self.jumping = 30
+                            self.wall_timer = 13
+                        elif not self.flip and self.last_movement[0] > 0:
+                            self.rebound.x = -speed
+                            self.movement.y = -height
+                            self.falling = 8
+                            self.jumping = 30
+                            self.wall_timer = 13
+                    else:
+                        if self.falling < 5:
+                            self.movement.y = -self.jump_height
+                            self.falling = 6
+                            self.jumping = 30
+
             else:
-                self.dimensions = pygame.Vector2(12, 13)
                 speed = 0.08
                 if self.controls["right"]:
                     self.movement.x += speed * dt

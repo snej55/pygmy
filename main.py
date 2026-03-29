@@ -75,7 +75,7 @@ class App:
         self.tile_map = TileMap(self)
         self.tile_map.load("data/maps/0.json")
 
-        self.player = Player(self, [5, 8], [10, 10])
+        self.player = Player(self, [6, 8], [10, 10])
         
         self.g = False
         self.s = False
