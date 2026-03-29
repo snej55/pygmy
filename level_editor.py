@@ -1,5 +1,5 @@
 import pygame, sys, time, math, json
-from src.util import load_image
+from src.util import *
 
 # window dimensions
 SCR_WIDTH = 2100
@@ -53,7 +53,8 @@ class Editor:
         # assets
         self.assets = {
             "grass": self.load_tileset(pygame.image.load("data/images/tiles/grass.png").convert()),
-            "spring": [load_image("tiles/spring.png")]
+            "spring": [load_image("tiles/spring.png")],
+            "drop": load_images("tiles/drop/")
         }
 
         # set colorkeys

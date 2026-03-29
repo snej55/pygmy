@@ -19,7 +19,7 @@ class TileMap:
         for loc in self.tile_map:
             if self.tile_map[loc]["type"] == "spring":
                 self.springs.append({
-                    "pos": (self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE),
+                    "pos": (self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE + 2),
                     "offset": 0,
                     "vel": 0
                 })

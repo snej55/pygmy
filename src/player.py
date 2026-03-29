@@ -40,6 +40,7 @@ class Player:
         self.rebound = pygame.Vector2(0, 0)
         self.dashing = 0
         self.sliding = 100
+        self.down_timer = 0
 
     def get_rect(self):
         return pygame.Rect(self.pos.x, self.pos.y, self.dimensions.x, self.dimensions.y)
@@ -80,6 +81,30 @@ class Player:
                     self.movement.y = 0
                     self.pos.y = r.y
                     self.rebound.y = 0
+            
+            r = self.get_rect()
+            tiles = tile_map.tiles_around(r.center)
+            hit = False
+            for tile in tiles:
+                if tile["type"] == "drop":
+                    rect = pygame.Rect(tile["pos"][0] * 8, tile["pos"][1] * 8, 8, 2)
+                    if rect.colliderect(r) and fm.y > 0:
+                        hit = True
+                        if self.down_timer <= 0 and not self.controls["down"]:
+                            self.falling = 0
+                            r.bottom = rect.top
+                            self.collisions["down"] = True
+                            self.movement.y = 0
+                            self.pos.y = r.y
+                            self.rebound.y = 0
+                        else:
+                            self.down_timer = 2
+            # if self.down_timer > 0:
+            #     self.controls["down"] = True
+            # else:
+            #     self.controls["down"] = False
+            if not hit:
+                self.down_timer -= 1
             
             self.last_movement = fm.copy()
 
