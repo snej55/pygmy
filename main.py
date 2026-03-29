@@ -83,6 +83,7 @@ class App:
         self.tile_map.load("data/maps/0.json")
 
         self.player = Player(self, [6, 8], [10, 10])
+        self.follow_pos = self.player.get_rect().center
         
         self.g = False
         self.s = False
@@ -148,9 +149,14 @@ class App:
                     return
 
                 # handle window resizing on desktop
-                if event.type in {pygame.WINDOWRESIZED, pygame.VIDEORESIZE, pygame.WINDOWSIZECHANGED}:
-                    width, height = pygame.display.get_window_size()
+                if event.type == pygame.VIDEORESIZE:
+                    width, height = event.size 
+                    if width < WIDTH:
+                        width = WIDTH
+                    if height < HEIGHT:
+                        height = HEIGHT
                     self.ctx.viewport = (0, 0, width, height)
+                    self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
                     self.screen = pygame.Surface((width // SCALE, height // SCALE))
                     self.screenTex.release()
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
