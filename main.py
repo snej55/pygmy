@@ -78,6 +78,7 @@ class App:
             "player/jump": load_animation("player/jump.png", 8, 8, 3),
             "player/land": load_animation("player/land.png", 8, 8, 4),
             "player/wall_jump": load_animation("player/wall_jump.png", 8, 8, 4),
+            "player/bubble": load_animation("player/bubble.png", 16, 16, 2),
             "spring": load_image("tiles/spring.png"),
             "grass": load_animation("grass.png", 9, 9, 18),
             "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17)
@@ -162,6 +163,18 @@ class App:
                 particle.vel[1] = min(0.2, particle.vel[1] + 0.005 / (average_gust * 0.1) * self.dt)
             if kill:
                 self.particles.remove(particle)
+        
+        hit = False
+        for water in self.tile_map.water:
+            water.update(self.screen, self.player, render_scroll, self.dt)
+            if water.get_rect().colliderect(self.player.get_rect()):
+                if not self.player.water:
+                    self.player.movement *= 0.2
+                self.player.water = True
+                hit = True
+        if not hit:
+            self.player.water = False
+
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)

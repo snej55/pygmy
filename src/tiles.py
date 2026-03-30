@@ -1,6 +1,8 @@
 import pygame
+
 from .util import read_json
 from .grass import GrassManager
+from .water import Water
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
@@ -13,6 +15,7 @@ class TileMap:
         self.tile_map = {}
         self.off_grid = []
         self.springs = []
+        self.water = []
         self.grass_map = {}
         self.grass_manager = None
     
@@ -56,6 +59,7 @@ class TileMap:
 
         self.tile_map = {}
         self.off_grid = []
+        self.water = []
 
         for tile in data["level"]["tiles"]:
             tile_loc = f"{tile['pos'][0]};{tile['pos'][1]}"
@@ -69,6 +73,9 @@ class TileMap:
         self.off_grid.extend(data["level"]["off_grid"])
         for tile in self.off_grid:
             tile["type"] = tile["type"]
+        
+        for water in data["level"]["water"]:
+            self.water.append(Water(water[0], water[1], [water[2], water[3]], 3))
         
         self.extract_springs()
         self.extract_grass()
