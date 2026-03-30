@@ -4,7 +4,7 @@ import pygame, sys, time, moderngl, array, random
 from src.util import *
 from src.tiles import *
 from src.player import *
-from src.particles import Particle
+from src.particles import *
 
 pygame.init()
 pygame.mixer.init()
@@ -81,7 +81,8 @@ class App:
             "player/bubble": load_animation("player/bubble.png", 16, 16, 2),
             "spring": load_image("tiles/spring.png"),
             "grass": load_animation("grass.png", 9, 9, 18),
-            "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17)
+            "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17),
+            "particle/bubble": load_animation("particles/bubble.png", 4, 4, 8)
         }
 
         self.scroll = pygame.Vector2(0, 0)
@@ -174,7 +175,12 @@ class App:
                 hit = True
         if not hit:
             self.player.water = False
-
+        else:
+            for key in self.player.controls:
+                if self.player.controls[key]:
+                    if random.random() / self.dt < 0.5:
+                        spread = 5
+                        self.particles.append(Bubble(self, "bubble", [self.player.get_rect().centerx + random.random() * spread - spread / 2, self.player.get_rect().centery + random.random() * spread - spread /2], [0, 0], random.random() * 2, True))
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
