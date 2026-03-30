@@ -104,9 +104,38 @@ class App:
 
         self.particles = []
         self.wind = ([0, 10], [0, 15], [0, 5])
+        self.kickup = []
+        self.kickup_surf = pygame.Surface((1, 1))
     
     def __contains__(self, pos):
         return self.scroll[0] <= pos[0] <= self.scroll[0] + self.screen.get_width() and self.scroll[1] <= pos[1] <= self.scroll[1] + self.screen.get_height()
+    
+    def update_kickup(self, render_scroll):
+        # p: [pos, vel, size, color]
+        decay = 0.01
+        bounce = 0.7
+        friction = 0.99
+        gravity = 0.1
+
+        for i, p in sorted(enumerate(self.kickup), reverse=True):
+            p[2] -= decay * self.dt
+            if p[2] <= 0:
+                self.kickup.pop(i)
+            else: 
+                self.kickup_surf.fill(p[3])
+                self.kickup_surf.set_alpha(int(p[2] * 255))
+                self.screen.blit(self.kickup_surf, (int(p[0][0] - render_scroll[0]), int(p[0][1] - render_scroll[1])))
+            p[0][0] += p[1][0] * self.dt
+            if self.tile_map.solid_check(p[0]):
+                p[0][0] -= p[1][0] * self.dt
+                p[1][0] *= -bounce
+                p[1][1] *= friction
+            p[0][1] += p[1][1] * self.dt
+            if self.tile_map.solid_check(p[0]):
+                p[0][1] -= p[1][1] * self.dt
+                p[1][1] *= -bounce
+                p[1][0] *= friction
+            p[1][1] = min(8, p[1][1] + gravity * self.dt)
         
     # put all the game stuff here
     def update(self):
@@ -158,6 +187,7 @@ class App:
                     self.particles.append(Particle(self, 'leaf', pos, (-0.1, 0.3), frame=random.randint(0, 16), solid=True))
                 else:
                     self.particles.append(Particle(self, 'leaf', pos, (-0.1, 0.3), frame=random.randint(0, 16), solid=False))
+
         for particle in self.particles.copy():
             kill = particle.update()
             particle.draw(self.screen, render_scroll)
@@ -166,6 +196,7 @@ class App:
                 particle.vel[1] = min(0.2, particle.vel[1] + 0.005 / (average_gust * 0.1) * self.dt)
             if kill:
                 self.particles.remove(particle)
+        self.update_kickup(render_scroll)
         
         hit = False
         for water in self.tile_map.water:

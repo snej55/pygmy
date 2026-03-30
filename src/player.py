@@ -2,6 +2,7 @@ import pygame, random, math
 
 from .anim import Anim
 from .particles import *
+from .util import load_palette
 
 class Player:
     def __init__(self, app, dimensions, start_pos):
@@ -27,6 +28,13 @@ class Player:
         self.flip = False
         self.grounded = 0
 
+        self.palette = load_palette(self.app.assets["player/idle"][0])
+        self.colors = []
+        pxarray = pygame.pixelarray.PixelArray(self.app.assets["player/idle"][0])
+        for row in pxarray:
+            for color in row:
+                self.colors.append(self.app.assets["player/idle"][0].unmap_rgb(color))
+
         self.water = False
         self.angle = 0
         self.angle_vel = 0
@@ -42,6 +50,7 @@ class Player:
         self.dashing = 0
         self.sliding = 100
         self.down_timer = 0
+        self.dash_length = 12
 
         self.water = False
 
@@ -178,9 +187,9 @@ class Player:
                     self.controls["dashing"] = False
                 first = self.dashing
                 if self.dashing < 0:
-                    self.dashing = min(self.dashing + 25 * dt, 0)
+                    self.dashing = min(self.dashing + self.dash_length * dt, 0)
                 else:
-                    self.dashing = max(self.dashing - 25 * dt, 0)
+                    self.dashing = max(self.dashing - self.dash_length * dt, 0)
                 if not self.dashing and first != self.dashing:
                     for _ in range(int(10)):
                         angle = random.random() * math.pi * 2 
@@ -191,18 +200,18 @@ class Player:
                         # self.app.particles[-1].speed = 0.5
 
                 if self.dashing:
-                    if random.random() / dt < 1:
+                    if random.random() / dt < 1.0:
                         feather = Particle(self.app, "feather", self.get_rect().center, [0, 0], random.randint(1, 3), True)
                         feather.particle_type = "leaf"
                         self.app.particles.append(feather)
                     if abs(self.dashing) > 40:
-                        self.movement[0] += self.dashing * 0.3
+                        self.movement[0] += self.dashing * 0.3 * dt
                         self.movement[1] += -0.1 * dt
                     else:
                         if self.falling > 5:
-                            self.movement[0] += self.dashing * 0.01
+                            self.movement[0] += self.dashing * 0.01 * dt
                         else:
-                            self.movement[0] += self.dashing * 0.001
+                            self.movement[0] += self.dashing * 0.001 * dt
             else:
                 speed = 0.18
                 if self.controls["right"]:
@@ -285,7 +294,14 @@ class Player:
         self.app.screen_shake = max(self.app.screen_shake, 16)
         for _ in range(random.randint(30, 50)):
             spread = 5
-            self.app.particles.append(Bubble(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random() * 5, False))
+            self.app.particles.append(Particle(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random() * 5, False))
+            self.app.particles[-1].speed = 0.2
+        for i, color in enumerate(self.colors):
+            if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
+                pos = [self.pos.x - 1 + (i % 8), self.pos.y + math.floor(i / 8)]
+                angle = 2 * math.pi * random.random()
+                speed = random.random() + 0.5
+                self.app.kickup.append([pos, [math.cos(angle) * speed, math.sin(angle) * speed - 2], random.random() * 0.05 + 0.95, random.choice(self.palette)])
         self.pos = pygame.Vector2(self.start_pos)
 
     def dash(self):
