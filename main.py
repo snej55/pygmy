@@ -22,39 +22,11 @@ class App:
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
 
         # setup moderngl
-        self.ctx = moderngl.create_context()
-        self.prog = self.ctx.program(
-            vertex_shader="""
-            #version 300 es
-            in vec2 aPos;
-            in vec2 aTexCoord;
-            out vec2 TexCoord;
-
-            void main()
-            {
-                gl_Position = vec4(aPos, 0.0, 1.0);
-                TexCoord = aTexCoord;
-            }
-            """,
-            fragment_shader="""
-            #version 300 es
-            precision mediump float;
-            uniform sampler2D screenTex;
-            in vec2 TexCoord;
-            out vec4 FragColor;
-
-            void main()
-            {
-                vec4 tex = texture(screenTex, TexCoord);
-                FragColor = tex;
-            }
-            """,
-        )
-        self.prog["screenTex"].value = 0
-
-        quadVertices = array.array("f", [-1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, 1.0, 1.0])
-        self.vbo = self.ctx.buffer(quadVertices)
-        self.vao = self.ctx.vertex_array(self.prog, [(self.vbo, "2f 2f", "aPos", "aTexCoord")])
+        self.ctx = None
+        self.prog = None
+        self.vbo = None
+        self.vao = None
+        self.setup_gl()
 
         self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
         self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -84,8 +56,13 @@ class App:
             "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17),
             "particle/feather": load_animation("particles/feather.png", 8, 8, 17),
             "particle/bubble": load_animation("particles/bubble.png", 4, 4, 8),
-            "particle/explosion": load_animation("particles/explosion.png", 5, 5, 15)
+            "particle/explosion": load_animation("particles/explosion.png", 5, 5, 15),
+            "noise": load_image("noise.png")
         }
+
+        self.noiseTex = self.ctx.texture(self.assets["noise"].get_size(), 4)
+        self.noiseTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.noiseTex.swizzle = "BGRA"
 
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
@@ -106,6 +83,25 @@ class App:
         self.wind = ([0, 10], [0, 15], [0, 5])
         self.kickup = []
         self.kickup_surf = pygame.Surface((1, 1))
+    
+    def setup_gl(self):
+        self.ctx = moderngl.create_context()
+
+        vert_src = ""
+        with open("data/shaders/screenShader.vert", "r") as f:
+            vert_src = f.read()
+        frag_src = ""
+        with open("data/shaders/screenShader.frag", "r") as f:
+            frag_src = f.read()
+        self.prog = self.ctx.program(
+            vertex_shader=vert_src,
+            fragment_shader=frag_src
+        )
+        self.prog["screenTex"].value = 0
+
+        quadVertices = array.array("f", [-1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, 1.0, 1.0])
+        self.vbo = self.ctx.buffer(quadVertices)
+        self.vao = self.ctx.vertex_array(self.prog, [(self.vbo, "2f 2f", "aPos", "aTexCoord")])
     
     def __contains__(self, pos):
         return self.scroll[0] <= pos[0] <= self.scroll[0] + self.screen.get_width() and self.scroll[1] <= pos[1] <= self.scroll[1] + self.screen.get_height()
@@ -223,6 +219,7 @@ class App:
         return texture
     
     def close(self):
+        self.noiseTex.release()
         self.screenTex.release()
         pygame.quit()
         sys.exit()
