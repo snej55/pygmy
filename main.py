@@ -79,7 +79,8 @@ class App:
             "player/land": load_animation("player/land.png", 8, 8, 4),
             "player/wall_jump": load_animation("player/wall_jump.png", 8, 8, 4),
             "spring": load_image("tiles/spring.png"),
-            "grass": load_animation("grass.png", 9, 9, 18)
+            "grass": load_animation("grass.png", 9, 9, 18),
+            "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17)
         }
 
         self.scroll = pygame.Vector2(0, 0)
@@ -90,20 +91,15 @@ class App:
 
         self.player = Player(self, [6, 8], [10, 10])
         self.follow_pos = self.player.get_rect().center
-        
-        self.g = False
-        self.s = False
-        self.j = False
-        self.dir = 1
 
+        self.particles = []
+        self.wind = ([0, 10], [0, 15], [0, 5])
+    
+    def __contains__(self, pos):
+        return self.scroll[0] <= pos[0] <= self.scroll[0] + self.screen.get_width() and self.scroll[1] <= pos[1] <= self.scroll[1] + self.screen.get_height()
+        
     # put all the game stuff here
     def update(self):
-        # if self.s:
-        #     self.player.speed += 0.005 * self.dt * self.dir
-        # if self.g:
-        #     self.player.gravity += 0.001 * self.dt * self.dir
-        # if self.j:
-        #     self.player.jump_height += 0.01 * self.dt * self.dir
         # update delta time
         self.dt = (time.time() - self.last_time) * 60
         self.last_time = time.time()
@@ -135,6 +131,24 @@ class App:
         self.tile_map.draw_decor(self.screen, render_scroll)
         self.tile_map.draw(self.screen, render_scroll)
         self.player.draw(self.screen, render_scroll)
+
+        average_gust = 0
+        for gust in self.wind:
+            gust[0] -= (gust[1] + math.sin(gust[0] * 0.025) * 0.3) * self.dt * 0.5
+            if not ((gust[0], self.scroll[1] + self.screen.get_height() / 2) in self):
+                gust[1] = 5 * (random.random() + 0.5) * 2
+                gust[0] = self.scroll[0] + self.screen.get_width() - gust[1] * self.dt
+            average_gust += gust[1]
+        average_gust *= 0.5
+
+        for particle in self.particles.copy():
+            kill = particle.update()
+            particle.draw(self.screen, render_scroll)
+            if particle.particle_type == 'leaf' and (not particle.done):
+                particle.pos[0] += math.sin(particle.frame * 0.08) * 0.8 * self.dt - 0.5 * self.dt * (average_gust * 0.1)
+                particle.vel[1] = min(0.2, particle.vel[1] + 0.005 / (average_gust * 0.1) * self.dt)
+            if kill:
+                self.particles.remove(particle)
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)

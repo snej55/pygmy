@@ -70,8 +70,8 @@ class Grass:
         self.update_img()
         loc = (self.pos[0] + int(self.img.get_width() / 2) - int(self.img_copy.get_width() / 2) - scroll[0], self.pos[1] + int(self.img.get_height() / 2) - int(self.img_copy.get_height() / 2) - scroll[1])
         surf.blit(self.img_copy, loc)
-        # if random.randint(1, int(10000 / dt)) == 30:
-        #     self.app.world.gfx_manager.particles.append(Particle(self.app, 'leaf', list(self.rect.center), (random.random() - 0.34, random.random() * 0.45), frame=random.randint(0, 16), solid=False))
+        if random.random() / dt < 0.001:
+            self.app.particles.append(Particle(self.app, 'leaf', list(self.rect.center), (random.random() - 0.34, random.random() * 0.45), frame=random.randint(0, 16), solid=False))
 
 class GrassTile:
     img_cache = {}
