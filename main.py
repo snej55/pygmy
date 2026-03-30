@@ -37,6 +37,7 @@ class App:
         # delta time
         self.dt = 1
         self.last_time = time.time() - 1 / 60
+        self.time = 0
 
         # load assets
         self.assets = {
@@ -63,6 +64,10 @@ class App:
         self.noiseTex = self.ctx.texture(self.assets["noise"].get_size(), 4)
         self.noiseTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
         self.noiseTex.swizzle = "BGRA"
+        self.noiseTex.repeat_x = True
+        self.noiseTex.repeat_y = True
+        self.noiseTex.write(self.assets["noise"].get_view('1'))
+        self.prog["noise"].value = 1
 
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
@@ -159,6 +164,8 @@ class App:
             random.random() * self.screen_shake - self.screen_shake / 2,
         )
         render_scroll = (int(self.scroll[0] + screen_shake_offset[0]), int(self.scroll[1] + screen_shake_offset[1]))
+        self.prog["scrollX"].value = render_scroll[0]
+        self.prog["scrollY"].value = render_scroll[1]
 
         self.screen_shake = max(0, self.screen_shake - 1 * self.dt)
         self.screen.fill((0, 0, 0))
@@ -275,6 +282,13 @@ class App:
 
             self.screenTex.write(self.screen.get_view('1'))
             self.screenTex.use(0)
+
+            self.noiseTex.use(1)
+
+            self.time += self.dt
+            self.prog["time"].value = self.time
+            self.prog["scrWidth"].value = self.screen.get_width()
+            self.prog["scrHeight"].value = self.screen.get_height()
 
             self.ctx.clear(0, 0, 0)
             self.vao.render(moderngl.TRIANGLE_STRIP)
