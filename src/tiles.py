@@ -1,5 +1,6 @@
 import pygame
 from .util import read_json
+from .grass import GrassManager
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
@@ -12,6 +13,8 @@ class TileMap:
         self.tile_map = {}
         self.off_grid = []
         self.springs = []
+        self.grass_map = {}
+        self.grass_manager = None
     
     def extract_springs(self):
         self.springs = []
@@ -68,6 +71,21 @@ class TileMap:
             tile["type"] = tile["type"]
         
         self.extract_springs()
+        self.extract_grass()
+    
+    def extract_grass(self):
+        grass_locs = []
+        self.grass_map = {}
+        for loc in self.tile_map:
+            if self.tile_map[loc]["type"] == "grass_key":
+                self.grass_map[loc] = None
+                grass_locs.append(loc)
+        
+        for loc in grass_locs:
+            del self.tile_map[loc]
+        
+        self.grass_manager = GrassManager(self.app, self.app.assets["grass"])
+        self.grass_manager.load(self.grass_map, 8, 2)
 
     def tiles_around(self, pos):
         tiles = []
@@ -110,6 +128,7 @@ class TileMap:
 
     def draw(self, surf, scroll):
         self.render_springs(surf, scroll)
+        self.grass_manager.draw(surf, (scroll[0] + 8, scroll[1] - 3))
         for x in range(scroll[0] // TILE_SIZE, (scroll[0] + surf.get_width()) // TILE_SIZE + 1):
             for y in range(scroll[1] // TILE_SIZE, (scroll[1] + surf.get_height()) // TILE_SIZE + 1):
                 loc = str(x) + ";" + str(y)

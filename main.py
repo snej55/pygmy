@@ -70,12 +70,15 @@ class App:
         self.assets = {
             "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
             "tiles/drop": load_images("tiles/drop"),
+            "tiles/spikes": load_animation("tiles/spikes.png", 8, 8, 4),
+            "tiles/large_decor": load_animation("tiles/large_decor.png", 32, 32, 5),
             "player/idle": load_animation("player/idle.png", 8, 8, 6),
             "player/run": load_animation("player/run.png", 8, 8, 4),
             "player/jump": load_animation("player/jump.png", 8, 8, 3),
             "player/land": load_animation("player/land.png", 8, 8, 4),
             "player/wall_jump": load_animation("player/wall_jump.png", 8, 8, 4),
-            "spring": load_image("tiles/spring.png")
+            "spring": load_image("tiles/spring.png"),
+            "grass": load_animation("grass.png", 9, 9, 18)
         }
 
         self.scroll = pygame.Vector2(0, 0)
@@ -106,6 +109,7 @@ class App:
 
         self.player.update(self.dt, self.tile_map)
         self.tile_map.update_springs(self.dt, self.player)
+        self.tile_map.grass_manager.update([self.player.get_rect()])
 
         if self.player.ad > self.player.death_time:
             lookahead = 10
@@ -127,6 +131,7 @@ class App:
         self.screen_shake = max(0, self.screen_shake - 1 * self.dt)
         self.screen.fill((0, 0, 0))
 
+        self.tile_map.draw_decor(self.screen, render_scroll)
         self.tile_map.draw(self.screen, render_scroll)
         self.player.draw(self.screen, render_scroll)
     
