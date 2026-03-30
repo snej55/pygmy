@@ -57,7 +57,8 @@ class Editor:
             "grass_key": [load_image("tiles/grass_key.png")],
             "drop": load_images("tiles/drop/"),
             "spikes": self.load_sheet(pygame.image.load("data/images/tiles/spikes.png").convert(), [8, 8]),
-            "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32])
+            "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32]),
+            "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12])
         }
 
         # set colorkeys

@@ -72,6 +72,7 @@ class App:
             "tiles/drop": load_images("tiles/drop"),
             "tiles/spikes": load_animation("tiles/spikes.png", 8, 8, 4),
             "tiles/large_decor": load_animation("tiles/large_decor.png", 32, 32, 5),
+            "tiles/small_decor": load_animation("tiles/small_decor.png", 12, 12, 4),
             "player/idle": load_animation("player/idle.png", 8, 8, 6),
             "player/run": load_animation("player/run.png", 8, 8, 4),
             "player/jump": load_animation("player/jump.png", 8, 8, 3),
