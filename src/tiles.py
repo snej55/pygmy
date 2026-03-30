@@ -86,6 +86,24 @@ class TileMap:
         
         self.grass_manager = GrassManager(self.app, self.app.assets["grass"])
         self.grass_manager.load(self.grass_map, 8, 2)
+    
+    def extract(self, id_pairs, keep=False):
+        matches = []
+        for tile in self.off_grid.copy():
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                if not keep:
+                    self.off_grid.remove(tile)
+        for loc in self.tile_map.copy():
+            tile = self.tile_map[loc]
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                matches[-1]['pos'] = matches[-1]['pos'].copy()
+                matches[-1]['pos'][0] *= TILE_SIZE
+                matches[-1]['pos'][1] *= TILE_SIZE
+                if not keep:
+                    del self.tile_map[loc]
+        return matches
 
     def tiles_around(self, pos):
         tiles = []

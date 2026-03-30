@@ -4,7 +4,7 @@ import pygame, sys, time, moderngl, array, random
 from src.util import *
 from src.tiles import *
 from src.player import *
-from pathlib import Path
+from src.particles import Particle
 
 pygame.init()
 pygame.mixer.init()
@@ -88,6 +88,12 @@ class App:
 
         self.tile_map = TileMap(self)
         self.tile_map.load("data/maps/0.json")
+        self.leaf_spawners = []
+        for tree in self.tile_map.extract([('large_decor', 0), ('large_decor', 1), ('large_decor', 2), ('large_decor', 3)], keep=True):
+            if tree['type'] == 'large_decor':
+                self.leaf_spawners.append((pygame.Rect(2 + tree['pos'][0], 8 + tree['pos'][1], 19, 17), True))
+            else:
+                self.leaf_spawners.append((pygame.Rect(tree['pos'][0], tree['pos'][1] + 10, 12, 2), False))
 
         self.player = Player(self, [6, 8], [10, 10])
         self.follow_pos = self.player.get_rect().center
@@ -141,6 +147,13 @@ class App:
             average_gust += gust[1]
         average_gust *= 0.5
 
+        for rect, fix in self.leaf_spawners:
+            if random.random() * 20000 / (average_gust * 0.15) / self.dt < rect.width * rect.height:
+                pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
+                if not self.tile_map.solid_check(pos) and fix:
+                    self.particles.append(Particle(self, 'leaf', pos, (-0.1, 0.3), frame=random.randint(0, 16), solid=True))
+                else:
+                    self.particles.append(Particle(self, 'leaf', pos, (-0.1, 0.3), frame=random.randint(0, 16), solid=False))
         for particle in self.particles.copy():
             kill = particle.update()
             particle.draw(self.screen, render_scroll)
