@@ -1,6 +1,7 @@
 import pygame, random, math
 
 from .anim import Anim
+from .particles import *
 
 class Player:
     def __init__(self, app, dimensions, start_pos):
@@ -30,7 +31,7 @@ class Player:
         self.angle = 0
         self.angle_vel = 0
         self.ad = 120
-        self.death_time = 120
+        self.death_time = 60
         self.speed = 0.9
         self.jump_height = 3.07
         self.gravity = 0.23
@@ -175,14 +176,28 @@ class Player:
                             self.dashing = 55
                         self.wall_timer = 10
                     self.controls["dashing"] = False
+                first = self.dashing
                 if self.dashing < 0:
                     self.dashing = min(self.dashing + 25 * dt, 0)
                 else:
                     self.dashing = max(self.dashing - 25 * dt, 0)
+                if not self.dashing and first != self.dashing:
+                    for _ in range(int(10)):
+                        angle = random.random() * math.pi * 2 
+                        speed = random.random() * 0.5
+                        pvel = [math.cos(angle) * speed, math.sin(angle) * speed]
+                        self.app.particles.append(Particle(self.app, 'feather', self.get_rect().center, pvel, random.randint(0, 7), True))
+                        self.app.particles[-1].particle_type = "leaf"
+                        # self.app.particles[-1].speed = 0.5
+
                 if self.dashing:
+                    if random.random() / dt < 1:
+                        feather = Particle(self.app, "feather", self.get_rect().center, [0, 0], random.randint(1, 3), True)
+                        feather.particle_type = "leaf"
+                        self.app.particles.append(feather)
                     if abs(self.dashing) > 40:
                         self.movement[0] += self.dashing * 0.3
-                        self.movement[1] += -0.1 * dt 
+                        self.movement[1] += -0.1 * dt
                     else:
                         if self.falling > 5:
                             self.movement[0] += self.dashing * 0.01
@@ -235,9 +250,9 @@ class Player:
                             r.top = rect.bottom
                         self.movement.y = 0
                         self.pos.y = r.y
-            for rect in tile_map.danger_rects_around(self.get_rect().center):
-                if rect.colliderect(self.get_rect()):
-                    self.die()
+        for rect in tile_map.danger_rects_around(self.get_rect().center):
+            if rect.colliderect(self.get_rect()):
+                self.die()
     
     def handle_animation(self, dt):
         if self.falling > 5:
@@ -265,7 +280,13 @@ class Player:
         self.grounded += dt
 
     def die(self):
-        pass
+        self.ad = 0
+        self.movement = pygame.Vector2(0, 0)
+        self.app.screen_shake = max(self.app.screen_shake, 16)
+        for _ in range(random.randint(30, 50)):
+            spread = 5
+            self.app.particles.append(Bubble(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random() * 5, False))
+        self.pos = pygame.Vector2(self.start_pos)
 
     def dash(self):
         if not self.dashing:
@@ -277,33 +298,34 @@ class Player:
                 self.app.screen_shake = max(4, self.app.screen_shake)
 
     def draw(self, surf, scroll):
-        if not self.water:
-            anim = None
-            if self.falling > 5:
-                anim = self.jump
-                if self.sliding < 3:
-                    anim = self.wall_jump
-            elif self.grounded < len(self.land.animation) / self.land.speed:
-                anim = self.land
-            elif self.controls["left"] or self.controls["right"]:
-                anim = self.run
+        if self.ad >= self.death_time and not self.dashing:
+            if not self.water:
+                anim = None
+                if self.falling > 5:
+                    anim = self.jump
+                    if self.sliding < 3:
+                        anim = self.wall_jump
+                elif self.grounded < len(self.land.animation) / self.land.speed:
+                    anim = self.land
+                elif self.controls["left"] or self.controls["right"]:
+                    anim = self.run
+                else:
+                    anim = self.idle
+                anim.flip = self.flip
+                anim.draw(surf, scroll, (self.pos.x - 1, self.pos.y))
             else:
-                anim = self.idle
-            anim.flip = self.flip
-            anim.draw(surf, scroll, (self.pos.x - 1, self.pos.y))
-        else:
-            pb = self.app.assets["player/bubble"][0]
-            rot_surf = pygame.transform.rotate(pb, self.angle)
-            surf.blit(
-                rot_surf,
-                (
-                    self.pos.x
-                    + int(pb.get_width() / 2)
-                    - int(rot_surf.get_width() / 2)
-                    - scroll[0] - self.dimensions.x,
-                    self.pos.y
-                    + int(pb.get_height() / 2)
-                    - int(rot_surf.get_height() / 2)
-                    - scroll[1] - self.dimensions.y / 2,
-                ),
-            )
+                pb = self.app.assets["player/bubble"][0]
+                rot_surf = pygame.transform.rotate(pb, self.angle)
+                surf.blit(
+                    rot_surf,
+                    (
+                        self.pos.x
+                        + int(pb.get_width() / 2)
+                        - int(rot_surf.get_width() / 2)
+                        - scroll[0] - self.dimensions.x,
+                        self.pos.y
+                        + int(pb.get_height() / 2)
+                        - int(rot_surf.get_height() / 2)
+                        - scroll[1] - self.dimensions.y / 2,
+                    ),
+                )

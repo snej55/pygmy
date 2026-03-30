@@ -82,7 +82,9 @@ class App:
             "spring": load_image("tiles/spring.png"),
             "grass": load_animation("grass.png", 9, 9, 18),
             "particle/leaf": load_animation("particles/leaf.png", 8, 8, 17),
-            "particle/bubble": load_animation("particles/bubble.png", 4, 4, 8)
+            "particle/feather": load_animation("particles/feather.png", 8, 8, 17),
+            "particle/bubble": load_animation("particles/bubble.png", 4, 4, 8),
+            "particle/explosion": load_animation("particles/explosion.png", 5, 5, 15)
         }
 
         self.scroll = pygame.Vector2(0, 0)

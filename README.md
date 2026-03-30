@@ -16,7 +16,6 @@ vfx: shockwaves, light sources, slomo, particles, distortion shockwaves, slime, 
 
 extra:
 pet
-vim keybindings?
 add angular vel to springs
 
 coins/collectables
