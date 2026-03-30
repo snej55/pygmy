@@ -91,7 +91,7 @@ class GrassTile:
         self.go_grass = False
 
     def wind(self):
-        return max(-90, min(90, self.manager.wind(time.time() + math.sin(self.pos[0] * 0.5) * 25)))
+        return max(-90, min(90, self.manager.wind(time.time() * 30 + math.sin(self.pos[0] * 0.5) * 25)))
     
     def update(self, entity, dt):
         for blade in self.grass:

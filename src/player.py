@@ -189,7 +189,7 @@ class Player:
                         else:
                             self.movement[0] += self.dashing * 0.001
             else:
-                speed = 0.08
+                speed = 0.18
                 if self.controls["right"]:
                     self.movement.x += speed * dt
                     self.angle_vel -= 0.15 * dt
@@ -203,11 +203,11 @@ class Player:
                 if self.controls["down"]:
                     self.movement.y += speed * dt
 
-                self.movement.x += (self.movement.x * 0.95 - self.movement.x) * dt
+                self.movement.x += (self.movement.x * 0.9 - self.movement.x) * dt
                 self.movement.y += 0.01 * dt
-                self.movement.y += (self.movement.y * 0.95 - self.movement.y) * dt
+                self.movement.y += (self.movement.y * 0.9 - self.movement.y) * dt
                 self.angle += self.angle_vel
-                self.angle_vel += (self.angle_vel * 0.95 - self.angle_vel) * dt
+                self.angle_vel += (self.angle_vel * 0.9 - self.angle_vel) * dt
                 self.angle += (0 - self.angle) * 0.02 * dt
                 self.angle = self.angle % 360
 

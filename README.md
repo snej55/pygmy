@@ -11,7 +11,7 @@ escape prison
 components:
 bullet hell levels
 level editor
-decor: water, lava, particles, fire (tuesday)
+decor: lava, particles (fireflies), background, fire (tuesday)
 vfx: shockwaves, light sources, slomo, particles, distortion shockwaves, slime, movement particles, feather particles
 
 extra:

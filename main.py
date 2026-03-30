@@ -169,7 +169,7 @@ class App:
             water.update(self.screen, self.player, render_scroll, self.dt)
             if water.get_rect().colliderect(self.player.get_rect()):
                 if not self.player.water:
-                    self.player.movement *= 0.2
+                    self.player.movement *= 0.6
                 self.player.water = True
                 hit = True
         if not hit:
