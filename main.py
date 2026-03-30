@@ -212,46 +212,27 @@ class App:
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
                 if event.type == pygame.KEYDOWN:
-                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE}:
+                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
                         self.player.controls["up"] = True
                         self.player.jumping = 0
-                    elif event.key in {pygame.K_DOWN, pygame.K_s}:
+                    elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
                         self.player.controls["down"] = True
-                    elif event.key in {pygame.K_RIGHT, pygame.K_d}:
+                    elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
                         self.player.controls["right"] = True
-                    elif event.key in {pygame.K_LEFT, pygame.K_a}:
+                    elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
                         self.player.controls["left"] = True
                     elif event.key in {pygame.K_x}:
                         if abs(self.player.dashing) < 20:
                             self.player.controls['dashing'] = True
-                    # elif event.key == pygame.K_u:
-                    #     self.s = True
-                    # elif event.key == pygame.K_j:
-                    #     self.j = True
-                    # elif event.key == pygame.K_g:
-                    #     self.g = True
-                    # elif event.key == pygame.K_k:
-                    #     if self.dir == 1:
-                    #         self.dir = -1
-                    #     else:
-                    #         self.dir = 1
-                    # elif event.key == pygame.K_p:
-                    #     print(f"Speed: {self.player.speed}, Gravity: {self.player.gravity}, JumpH: {self.player.jump_height}")
                 if event.type == pygame.KEYUP:
-                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE}:
+                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
                         self.player.controls["up"] = False
-                    elif event.key in {pygame.K_DOWN, pygame.K_s}:
+                    elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
                         self.player.controls["down"] = False
-                    elif event.key in {pygame.K_RIGHT, pygame.K_d}:
+                    elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
                         self.player.controls["right"] = False
-                    elif event.key in {pygame.K_LEFT, pygame.K_a}:
+                    elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
                         self.player.controls["left"] = False
-                    # elif event.key == pygame.K_u:
-                    #     self.s = False
-                    # elif event.key == pygame.K_j:
-                    #     self.j = False
-                    # elif event.key == pygame.K_g:
-                    #     self.g = False
 
             # update game
             self.update()
