@@ -42,6 +42,7 @@ class App:
         # load assets
         self.assets = {
             "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
+            "tiles/bricks": load_tile_imgs("tiles/bricks.png", TILE_SIZE),
             "tiles/drop": load_images("tiles/drop"),
             "tiles/spikes": load_animation("tiles/spikes.png", 8, 8, 4),
             "tiles/large_decor": load_animation("tiles/large_decor.png", 32, 32, 5),

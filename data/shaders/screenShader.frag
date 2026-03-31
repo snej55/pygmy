@@ -28,7 +28,7 @@ void main()
     float noise2 = texture(noise, noise2uv).r;
     float pNoise = (noise1 + noise2) * 0.5;
     vec4 tex = texture(screenTex, TexCoord);
-    float gray = min(1.0, (tex.r + tex.g + tex.b) * 0.333);
+    // float gray = min(1.0, (tex.r + tex.g + tex.b) * 0.333);
     // if (gray > 0.001)
     // pNoise = 0.0;
     FragColor = vec4(mix(vec3(0.65, 0.6, 0.59), tex.rgb, 1.0 - pNoise * pNoise * pNoise), 1.0);
