@@ -213,6 +213,7 @@ class Player:
                         else:
                             self.movement[0] += self.dashing * 0.001 * dt
             else:
+                self.controls["dashing"] = False
                 speed = 0.18
                 if self.controls["right"]:
                     self.movement.x += speed * dt
