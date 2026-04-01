@@ -48,6 +48,7 @@ class Editor:
         # level data
         self.tile_map = {}
         self.off_grid = []
+        self.anchors = []
         self.load(MAP)
 
         # assets
@@ -61,6 +62,8 @@ class Editor:
             "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32]),
             "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12])
         }
+        self.anchor = load_image("anchor.png")
+        # {"start": [x, y], "end": [x, y]}
 
         # set colorkeys
         for key in self.assets:
@@ -107,6 +110,7 @@ class Editor:
             self.tile_map = {}
             self.off_grid = []
             self.water = []
+            self.anchors = []
 
             print(f"Loading level data from `{path}`")
 
@@ -120,6 +124,7 @@ class Editor:
             for tile in self.off_grid:
                 tile["type"] = tile["type"]
             self.water.extend(data["level"]["water"])
+            self.anchors.extend(data["level"]["anchors"])
 
         # if map doesn't exist, create new one
         except FileNotFoundError:
@@ -147,6 +152,7 @@ class Editor:
                         "tiles": tiles,
                         "off_grid": off_grid,
                         "water": [[water[0], water[1], water[2], water[3]] for water in self.water],
+                        "anchors": [{"start": anchor["start"], "end": anchor["end"]} for anchor in self.anchors]
                     }
                 },
                 f,
@@ -303,6 +309,10 @@ class Editor:
                 self.assets[tile["type"]][tile["variant"]], (tile["pos"][0] - self.scroll.x, tile["pos"][1] - self.scroll.y)
             )
         self.draw_tiles()
+        for anchor in self.anchors:
+            self.screen.blit(self.anchor, (anchor["start"][0] - 10 - self.scroll.x, anchor["start"][1] - 10 - self.scroll.y))
+            pygame.draw.line(self.screen, (255, 255, 255), pygame.Vector2(anchor["start"]) - self.scroll, pygame.Vector2(anchor["end"]) - self.scroll, 2)
+            pygame.draw.circle(self.screen, (255, 255, 255), pygame.Vector2(anchor["end"]) - self.scroll, 5)
 
         mouse_pos = pygame.mouse.get_pos()
         if self.grid:
@@ -353,6 +363,8 @@ class Editor:
                         self.mode = "water"
                     elif event.key == pygame.K_n:
                         self.mode = "normal"
+                    elif event.key == pygame.K_l:
+                        self.mode = "anchor"
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         self.controls["right"] = False
@@ -387,6 +399,24 @@ class Editor:
                                         self.water_click[1][1] - self.water_click[0][1],
                                     )
                                 )
+                        elif self.mode == "anchor":
+                            mouse_pos = pygame.mouse.get_pos()
+                            mouse_pos = [
+                                math.floor((mouse_pos[0] / SCALE + self.scroll.x) / TILE_SIZE) * TILE_SIZE,
+                                math.floor((mouse_pos[1] / SCALE + self.scroll.y) / TILE_SIZE) * TILE_SIZE,
+                            ]
+                            if self.first_click:
+                                self.first_click = False
+                                self.water_click[0] = mouse_pos
+                            else:
+                                self.first_click = True
+                                self.water_click[1] = mouse_pos
+                                self.anchors.append(
+                                    {
+                                        "start": self.water_click[0].copy(),
+                                        "end": self.water_click[1].copy()
+                                    }
+                                )
                     elif event.button == 3:
                         self.right_click = True
                         if self.mode == "water":
@@ -398,7 +428,15 @@ class Editor:
                             for i, water in sorted(enumerate(self.water), reverse=True):
                                 if pygame.Rect(water).collidepoint(mouse_pos):
                                     self.water.pop(i)
-
+                        elif self.mode == "anchor":
+                            mouse_pos = pygame.mouse.get_pos()
+                            mouse_pos = [
+                                math.floor(mouse_pos[0] / SCALE + self.scroll.x),
+                                math.floor(mouse_pos[1] / SCALE + self.scroll.y),
+                            ]
+                            for i, anchor in sorted(enumerate(self.anchors), reverse=True):
+                                if pygame.Rect(anchor["start"][0] - 10, anchor["start"][1] - 10, 21, 21).collidepoint(mouse_pos):
+                                    self.anchors.pop(i)
                     elif self.controls["l_shift"]:
                         if event.button == 4:
                             self.tile_variant = (self.tile_variant - 1) % len(self.assets[self.tile_list[self.tile_type]])
