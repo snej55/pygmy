@@ -179,6 +179,10 @@ class TileMap:
             levelMin[1] = min(levelMin[1], y)
             levelMax[0] = max(levelMax[0], x)
             levelMax[1] = max(levelMax[1], y)
+        # levelMin[0] -= 100
+        # levelMax[0] += 100
+        # levelMin[1] -= 100
+        # levelMax[1] += 100
         
         queue = []
         for x in range(levelMax[0] - levelMin[0]):

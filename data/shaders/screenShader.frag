@@ -14,7 +14,8 @@ uniform float scrHeight;
 uniform float scrollX;
 uniform float scrollY;
 
-uniform float distortion = 10.0;
+uniform float distortion = 5.0;
+uniform float fogStrength = 0.2;
 
 void main()
 {
@@ -62,10 +63,14 @@ void main()
 
     vec3 light;
     if (grey > 0.0)
+    {
         light = texture(lightTex, lightUV - texelSize * 4.0).rgb;
+    }
     else
+    {
         light = vec3(1.0);
+    }
 
-    vec3 diffuse = mix(vec3(0.65, 0.6, 0.59), tex.rgb * light, 1.0 - pow(pNoise - light.r, 4.0));
-    FragColor = vec4(diffuse + water * 0.5, 1.0);
+    vec3 diffuse = mix(vec3(0.65, 0.6, 0.59), tex.rgb * light, 1.0 - pow(pNoise + fogStrength - grey * light.r, 6.0));
+    FragColor = vec4(diffuse + water * 0.6, 1.0);
 }
