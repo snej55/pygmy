@@ -20,6 +20,7 @@ uniform vec3 shockParams = vec3(10.0, 0.8, 0.1);
 
 uniform float distortion = 5.0;
 uniform float fogStrength = 0.2;
+uniform float screenShake = 0.0;
 
 void main()
 {
@@ -31,6 +32,14 @@ void main()
     }
     vec2 texelSize = vec2(1.0 / scrWidth, 1.0 / scrHeight);
     vec2 coords = TexCoord;
+    if (screenShake > 0.01)
+    {
+        coords -= 0.5;
+        float s = sin(screenShake);
+        float c = cos(screenShake);
+        coords = mat2(c, -s, s, c) * coords;
+        coords += 0.5;
+    }
     vec3 water = texture(waterTex, TexCoord).rgb;
     if (water.r + water.g + water.b > 0.0)
     {

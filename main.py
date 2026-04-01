@@ -265,6 +265,7 @@ class App:
         render_scroll = (int(self.scroll[0] + screen_shake_offset[0]), int(self.scroll[1] + screen_shake_offset[1]))
         self.prog["scrollX"].value = render_scroll[0]
         self.prog["scrollY"].value = render_scroll[1]
+        self.prog["screenShake"].value = screen_shake_offset[0] * 0.01;
 
         self.screen_shake = max(0, self.screen_shake - 1 * self.dt)
         self.screen.fill((0, 0, 0))
