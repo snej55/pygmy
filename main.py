@@ -5,6 +5,7 @@ from src.util import *
 from src.tiles import *
 from src.player import *
 from src.particles import *
+from src.sparks import *
 
 pygame.init()
 pygame.mixer.init()
@@ -13,6 +14,7 @@ pygame.mixer.init()
 WIDTH, HEIGHT = 1200, 900
 SCALE = 4
 SCROLL_LIMIT = 8
+SMOKE_DELAY = 6
 
 class App:
     def __init__(self):
@@ -38,6 +40,7 @@ class App:
         self.dt = 1
         self.last_time = time.time() - 1 / 60
         self.time = 0
+        self.slomo = 1
 
         # load assets
         self.assets = {
@@ -89,6 +92,8 @@ class App:
         self.wind = ([0, 10], [0, 15], [0, 5])
         self.kickup = []
         self.kickup_surf = pygame.Surface((1, 1))
+        self.sparks = []
+        self.smoke = []
     
     def setup_gl(self):
         self.ctx = moderngl.create_context()
@@ -116,8 +121,8 @@ class App:
         # p: [pos, vel, size, color]
         decay = 0.01
         bounce = 0.7
-        friction = 0.99
-        gravity = 0.1
+        friction = 0.98
+        gravity = 0.125
 
         for i, p in sorted(enumerate(self.kickup), reverse=True):
             p[2] -= decay * self.dt
@@ -138,11 +143,40 @@ class App:
                 p[1][1] *= -bounce
                 p[1][0] *= friction
             p[1][1] = min(8, p[1][1] + gravity * self.dt)
+    
+    def update_sparks(self, render_scroll):
+        for i, spark in sorted(enumerate(self.sparks), reverse=True):
+            spark.update(self.dt)
+            if spark.speed >= 0:
+                spark.draw(self.screen, render_scroll)
+            else:
+                self.sparks.pop(i)
+    
+    @staticmethod
+    def alpha_surf(dim, alpha, color):
+        surf = pygame.Surface(dim)
+        surf.fill(color)
+        surf.set_alpha(alpha)
+        return surf.convert_alpha()
+    
+    def calc_smoke(self, smoke, render_scroll):
+        smoke[0][0] += smoke[1][0] * self.dt
+        smoke[0][1] += smoke[1][1] * self.dt
+        smoke[1][0] += (smoke[1][0] * 0.9 - smoke[1][0]) * self.dt
+        smoke[1][1] += (smoke[1][1] * 0.98 - smoke[1][1]) * self.dt
+        smoke[4] += (smoke[5] - smoke[4]) / 10 * self.dt
+        smoke[3] = max(0, smoke[3] - SMOKE_DELAY * self.dt)
+        smoke[2] += 0.2 * self.dt
+        surf = pygame.transform.rotate(self.alpha_surf([smoke[2], smoke[2]], smoke[3], smoke[6]), smoke[4])
+        if not smoke[3]:
+            self.smoke.remove(smoke)
+        return (surf, (smoke[0][0] - surf.get_width() * 0.5 - render_scroll[0], smoke[0][1] - surf.get_height() * 0.5 - render_scroll[1]))
         
     # put all the game stuff here
     def update(self):
         # update delta time
-        self.dt = (time.time() - self.last_time) * 60
+        self.slomo += (1 - self.slomo) * 0.3 * self.dt
+        self.dt = (time.time() - self.last_time) * 60 * self.slomo
         self.last_time = time.time()
 
         self.player.update(self.dt, self.tile_map)
@@ -201,6 +235,9 @@ class App:
             if kill:
                 self.particles.remove(particle)
         self.update_kickup(render_scroll)
+        self.update_sparks(render_scroll)
+
+        self.screen.fblits([self.calc_smoke(smoke, render_scroll) for smoke in self.smoke.copy()])
         
         hit = False
         for water in self.tile_map.water:

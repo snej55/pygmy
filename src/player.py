@@ -3,6 +3,7 @@ import pygame, random, math
 from .anim import Anim
 from .particles import *
 from .util import load_palette
+from .sparks import Spark
 
 class Player:
     def __init__(self, app, dimensions, start_pos):
@@ -42,7 +43,7 @@ class Player:
         self.death_time = 60
         self.speed = 0.9
         self.jump_height = 3.07
-        self.gravity = 0.23
+        self.gravity = 0.215
         self.collisions = {"right": False, "left": False, "up": False, "down": False}
         self.wall_slide = False
         self.wall_timer = 0
@@ -73,9 +74,17 @@ class Player:
                         if fm.x > 0:
                             r.right = rect.left
                             self.collisions["right"] = True
+                            for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                speed = random.random() + 0.2
+                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                self.app.kickup.append([[r.right - 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         if fm.x < 0:
                             r.left = rect.right
                             self.collisions["left"] = True
+                            for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                speed = random.random() + 0.2
+                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                self.app.kickup.append([[r.left + 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.pos.x = r.x
                         self.movement.x = 0
                         self.rebound.x = 0
@@ -88,9 +97,17 @@ class Player:
                             r.bottom = rect.top
                             self.falling = 0
                             self.collisions["down"] = True
+                            for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                speed = random.random() + 0.2
+                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                self.app.kickup.append([[r.centerx, r.bottom - 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         elif fm.y < 0:
                             r.top = rect.bottom
                             self.collisions["up"] = True
+                            for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                speed = random.random() + 0.2
+                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                self.app.kickup.append([[r.centerx, r.top + 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.movement.y = 0
                         self.pos.y = r.y
                         self.rebound.y = 0
@@ -141,7 +158,12 @@ class Player:
 
                 self.rebound += (self.rebound * 0.9 - self.rebound) * dt
 
-                self.movement.y += self.gravity * dt
+                gravity_mod = 1.0
+                if -0.6 < self.movement.y < 0.2:
+                    gravity_mod = 0.8
+                elif self.movement.y > 0.1:
+                    gravity_mod = 1.2
+                self.movement.y += self.gravity * dt * gravity_mod
                 self.movement.y = min(self.movement.y, 8)
 
                 self.wall_slide = False
@@ -198,6 +220,7 @@ class Player:
                         self.app.particles.append(Particle(self.app, 'feather', self.get_rect().center, pvel, random.randint(0, 7), True))
                         self.app.particles[-1].particle_type = "leaf"
                         # self.app.particles[-1].speed = 0.5
+                    self.app.slomo = 0.8
 
                 if self.dashing:
                     if random.random() / dt < 1.0:
@@ -214,6 +237,7 @@ class Player:
                             self.movement[0] += self.dashing * 0.001 * dt
             else:
                 self.controls["dashing"] = False
+                self.dashing = 0
                 speed = 0.18
                 if self.controls["right"]:
                     self.movement.x += speed * dt
@@ -303,7 +327,18 @@ class Player:
                 angle = 2 * math.pi * random.random()
                 speed = random.random() + 0.5
                 self.app.kickup.append([pos, [math.cos(angle) * speed, math.sin(angle) * speed - 2], random.random() * 0.05 + 0.95, random.choice(self.palette)])
+        for _ in range(random.randint(20, 30)):
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 3
+            self.app.sparks.append(
+                Spark(self.get_rect().center, angle, speed, [255, 255, 255])
+            )
+        for _ in range(random.randint(30, 50)):
+            angle = -math.pi * 0.5 + (random.random() - 0.5) 
+            speed = random.random() + 1
+            self.app.smoke.append([list(self.get_rect().center), [math.cos(angle) * speed, math.sin(angle) * speed], 1, random.randint(200, 255), 0, random.random() * 720 - 360, (200, 200, 255)])
         self.pos = pygame.Vector2(self.start_pos)
+        self.app.slomo = 0.2
 
     def dash(self):
         if not self.dashing:

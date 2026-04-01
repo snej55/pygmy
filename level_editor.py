@@ -164,7 +164,7 @@ class Editor:
                     str(math.floor(tile_pos[0] / TILE_SIZE) + shift[0]) + ";" + str(math.floor(tile_pos[1] / TILE_SIZE) + shift[1])
                 )
                 if check_loc in self.tile_map:
-                    if self.tile_map[check_loc]["type"] in AUTO_TILE_TYPES:
+                    if (self.tile_map[check_loc]["type"] in AUTO_TILE_TYPES) and self.tile_map[check_loc]["type"] == tile["type"]:
                         aloc += "1"
                     else:
                         aloc += "0"
