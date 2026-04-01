@@ -70,6 +70,7 @@ class App:
             "tiles/autumn": load_tile_imgs("tiles/autumn.png", TILE_SIZE),
             "tiles/drop": load_images("tiles/drop"),
             "tiles/spikes": load_animation("tiles/spikes.png", 8, 8, 4),
+            "tiles/bars": load_animation("tiles/bars.png", 8, 8, 1),
             "tiles/large_decor": load_animation("tiles/large_decor.png", 32, 32, 5),
             "tiles/small_decor": load_animation("tiles/small_decor.png", 12, 12, 4),
             "player/idle": load_animation("player/idle.png", 8, 8, 6),
@@ -109,7 +110,7 @@ class App:
         self.screen_shake = 0
 
         self.tile_map = TileMap(self)
-        self.tile_map.load("data/maps/0.json")
+        self.tile_map.load("data/maps/1.json")
         self.leaf_spawners = []
         for tree in self.tile_map.extract([('large_decor', 0), ('large_decor', 1), ('large_decor', 2), ('large_decor', 3)], keep=True):
             if tree['type'] == 'large_decor':
@@ -117,7 +118,7 @@ class App:
             else:
                 self.leaf_spawners.append((pygame.Rect(tree['pos'][0], tree['pos'][1] + 10, 12, 2), False))
 
-        self.player = Player(self, [6, 8], [10, 10])
+        self.player = Player(self, [6, 8], self.tile_map.start_pos)
         self.follow_pos = self.player.get_rect().center
 
         self.particles = []
@@ -409,6 +410,8 @@ class App:
                     elif event.key in {pygame.K_x}:
                         if abs(self.player.dashing) < 20:
                             self.player.controls['dashing'] = True
+                    elif event.key == pygame.K_b:
+                        self.tile_map.break_bars()
                 if event.type == pygame.KEYUP:
                     if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
                         self.player.controls["up"] = False

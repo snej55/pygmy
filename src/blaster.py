@@ -25,7 +25,7 @@ class Blaster:
             self.bullets.append([[self.pos[0] + 10 + 9 * math.cos(angle), self.pos[1] + 10 + 9 * math.sin(angle)], angle, speed, 0])
             for _ in range(random.randint(3, 4)):
                 self.app.sparks.append(Spark([self.pos[0] + 10 + 9 * math.cos(angle), self.pos[1] + 10 + 9 * math.sin(angle)], angle + random.random() - 0.5, random.random() + 0.5, (246, 242, 195)))
-        self.target_angle = math.atan2(self.app.player.pos.y - self.pos[1], self.app.player.pos.x - self.pos[0])
+        self.target_angle = math.atan2(self.app.player.get_rect().centery - self.pos[1], self.app.player.get_rect().centerx - self.pos[0])
     
     def update(self, surf, scroll, dt, tile_map):
         self.timer += dt

@@ -15,7 +15,7 @@ LEVEL_WIDTH = 20
 LEVEL_HEIGHT = 20
 
 # json map path
-MAP = "data/maps/0.json"
+MAP = "data/maps/1.json"
 
 # tile sets that can be autotiled
 AUTO_TILE_TYPES = {"grass", "bricks", "wood", "autumn"}
@@ -56,6 +56,7 @@ class Editor:
             "grass": self.load_tileset(pygame.image.load("data/images/tiles/grass.png").convert()),
             "autumn": self.load_tileset(pygame.image.load("data/images/tiles/autumn.png").convert()),
             "bricks": self.load_tileset(pygame.image.load("data/images/tiles/bricks.png").convert()),
+            "bars": load_animation("tiles/bars.png", 8, 8, 1),
             "wood": self.load_tileset(pygame.image.load("data/images/tiles/wood.png").convert()),
             "spring": [load_image("tiles/spring.png")],
             "grass_key": [load_image("tiles/grass_key.png")],
@@ -63,7 +64,8 @@ class Editor:
             "spikes": self.load_sheet(pygame.image.load("data/images/tiles/spikes.png").convert(), [8, 8]),
             "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32]),
             "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12]),
-            "blaster": self.load_sheet(pygame.image.load("data/images/blaster.png"), [21, 21])
+            "blaster": self.load_sheet(pygame.image.load("data/images/blaster.png"), [21, 21]),
+            "start": [load_image("tiles/start.png")]
         }
         self.anchor = load_image("anchor.png")
         # {"start": [x, y], "end": [x, y]}
@@ -98,7 +100,7 @@ class Editor:
     def create_new(self, path):
         f = open(path, "w")
         # write basic json level data
-        json.dump({"level": {"tiles": [], "off_grid": [], "water": []}}, f, separators=(",", ":"))
+        json.dump({"level": {"tiles": [], "off_grid": [], "water": [], "anchors": []}}, f, separators=(",", ":"))
         f.close()
 
     # load json level data from path

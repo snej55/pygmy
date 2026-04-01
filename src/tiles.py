@@ -1,4 +1,4 @@
-import pygame, math, time
+import pygame, math, time, random
 
 from .util import read_json
 from .grass import GrassManager
@@ -7,7 +7,7 @@ from .blaster import Blaster
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
-PHYSICS_TILES = {"grass", "bricks", "wood", "autumn"}
+PHYSICS_TILES = {"grass", "bricks", "wood", "autumn", "bars"}
 DANGER_TILES = ["spikes"]
 
 class TileMap:
@@ -22,6 +22,28 @@ class TileMap:
         self.light_map = {}
         self.anchors = []
         self.blasters = []
+        self.start_pos = [10, 10]
+
+        self.colors = []
+        pxarray = pygame.pixelarray.PixelArray(self.app.assets["tiles/bars"][0])
+        for row in pxarray:
+            for color in row:
+                self.colors.append(self.app.assets["tiles/bars"][0].unmap_rgb(color))
+    
+    def break_bars(self):
+        for loc in self.tile_map.copy():
+            if self.tile_map[loc]["type"] == "bars":
+                pos = [int(c) * 8 for c in loc.split(';')]
+                for x in range(8):
+                    for y in range(8):
+                        color = self.colors[x + y * 8]
+                        if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
+                            angle = random.random() * math.pi * 2
+                            speed = random.random() + 0.5
+                            self.app.kickup.append([[pos[0] + x, pos[1] + y], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
+                del self.tile_map[loc]
+        self.app.screen_shake = 16
+        self.app.slomo = 0.1
     
     def extract_springs(self):
         self.springs = []
@@ -90,6 +112,11 @@ class TileMap:
         
         for anchor in data["level"]["anchors"]:
             self.anchors.append({"start": anchor["start"].copy(), "end": anchor["end"].copy(), "angle": 0, "pos": anchor["start"].copy(), "time": 0})
+
+        for loc in self.tile_map.copy():
+            if self.tile_map[loc]["type"] == "start":
+                self.start_pos = [self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE]
+                del self.tile_map[loc]
         
         self.extract_springs()
         self.extract_grass()
