@@ -17,7 +17,7 @@ class Particle:
         self.friction = pygame.Vector2(friction)
         self.timer = 0
         self.angle = random.random() * 360
-        self.decay = 1
+        self.decay = 2
     
     def img(self):
         self.frame += max(0.025, self.speed) * self.app.dt
@@ -33,7 +33,7 @@ class Particle:
         if self.done:
             if self.particle_type == 'particle':
                 self.alpha -= 200 * self.app.dt
-            self.alpha -= 2 * self.app.dt
+            self.alpha -= self.decay * self.app.dt
             kill = self.particle_type == 'explode' or self.particle_type == 'star' or self.particle_type == "bubble"
             if self.alpha < 15:
                 kill = True
@@ -46,17 +46,18 @@ class Particle:
             check = self.app.tile_map.solid_check(self.pos)
             if check: 
                 self.pos[0] -= self.vel[0] * self.app.dt
-                self.vel[0] = 0
+                self.vel[0] *= -0.5
+                self.vel[1] *= 0.9
         self.pos[1] += self.vel[1] * self.app.dt
         self.vel[1] += (self.vel[1] * self.friction.y - self.vel[1]) * self.app.dt
         if self.solid:
             check = self.app.tile_map.solid_check(self.pos)
             if check:
                 self.done = True
-                self.vel[1] = 0
-                self.vel[0] = 0
+                self.vel[1] *= -0.5
+                self.vel[0] *= 0.9
                 self.speed = 0
-        self.timer += self.decay * self.app.dt
+        self.timer += 1 * self.app.dt
         if self.timer > 600:
             kill = True
         return kill

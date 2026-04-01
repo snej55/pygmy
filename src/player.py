@@ -74,17 +74,19 @@ class Player:
                         if fm.x > 0:
                             r.right = rect.left
                             self.collisions["right"] = True
-                            for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
-                                speed = random.random() + 0.2
-                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
-                                self.app.kickup.append([[r.right - 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                            if not self.dashing:
+                                for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                    speed = random.random() + 0.2
+                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    self.app.kickup.append([[r.right - 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         if fm.x < 0:
                             r.left = rect.right
                             self.collisions["left"] = True
-                            for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
-                                speed = random.random() + 0.2
-                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
-                                self.app.kickup.append([[r.left + 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                            if not self.dashing:
+                                for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                    speed = random.random() + 0.2
+                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    self.app.kickup.append([[r.left + 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.pos.x = r.x
                         self.movement.x = 0
                         self.rebound.x = 0
@@ -97,17 +99,19 @@ class Player:
                             r.bottom = rect.top
                             self.falling = 0
                             self.collisions["down"] = True
-                            for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
-                                speed = random.random() + 0.2
-                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
-                                self.app.kickup.append([[r.centerx, r.bottom - 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                            if not self.dashing:
+                                for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                    speed = random.random() + 0.2
+                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    self.app.kickup.append([[r.centerx, r.bottom - 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         elif fm.y < 0:
                             r.top = rect.bottom
                             self.collisions["up"] = True
-                            for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
-                                speed = random.random() + 0.2
-                                angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
-                                self.app.kickup.append([[r.centerx, r.top + 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                            if not self.dashing:
+                                for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                    speed = random.random() + 0.2
+                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    self.app.kickup.append([[r.centerx, r.top + 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.movement.y = 0
                         self.pos.y = r.y
                         self.rebound.y = 0
@@ -220,9 +224,9 @@ class Player:
                         self.app.particles.append(Particle(self.app, 'feather', self.get_rect().center, pvel, random.randint(0, 7), True))
                         self.app.particles[-1].particle_type = "leaf"
                         # self.app.particles[-1].speed = 0.5
-                    self.app.slomo = 0.8
 
                 if self.dashing:
+                    self.app.slomo = 1.1
                     if random.random() / dt < 1.0:
                         feather = Particle(self.app, "feather", self.get_rect().center, [0, 0], random.randint(1, 3), True)
                         feather.particle_type = "leaf"
@@ -317,10 +321,11 @@ class Player:
         self.ad = 0
         self.movement = pygame.Vector2(0, 0)
         self.app.screen_shake = max(self.app.screen_shake, 16)
-        for _ in range(random.randint(30, 50)):
+        for _ in range(random.randint(50, 60)):
             spread = 5
-            self.app.particles.append(Particle(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random() * 5, False))
-            self.app.particles[-1].speed = 0.2
+            self.app.particles.append(Particle(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random(), False))
+            self.app.particles[-1].speed = 0.3
+            self.app.particles[-1].decay = 50
         for i, color in enumerate(self.colors):
             if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
                 pos = [self.pos.x - 1 + (i % 8), self.pos.y + math.floor(i / 8)]
