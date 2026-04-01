@@ -36,6 +36,8 @@ class App:
         self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
         self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.screenTex.swizzle = "BGRA"
+        self.screenTex.repeat_x = False
+        self.screenTex.repeat_y = False
 
         self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
         self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -45,7 +47,6 @@ class App:
         self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
         self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.waterTex.swizzle = "BGRA"
-
 
         self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
         self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -128,6 +129,12 @@ class App:
             # [pos, dir, angle]
             self.fireflies.append([[random.random() * 10000, random.random() * 10000], random.random() * math.pi * 2, random.random() * 10 + 10, random.random() * 4 * random.choice([-1, 1]), random.random() * 50])
         self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
+        self.shockwave_time = 1000
+        self.shockwave_center = [0, 0]
+    
+    def create_shockwave(self, pos):
+        self.shockwave_time = 0
+        self.shockwave_center = list(pos)
     
     def update_fireflies(self, scroll):
         for fly in self.fireflies:
@@ -317,6 +324,11 @@ class App:
         
         light_surf = self.tile_map.get_light_data(self.screen, render_scroll)
         self.lightTex.write(light_surf.get_view('1'))
+
+        center = [(self.shockwave_center[0] - render_scroll[0]) / self.screen.get_width(), (self.shockwave_center[1] - render_scroll[1]) / self.screen.get_height()]
+        self.prog["shockwave"].value = tuple(center)
+        self.prog["shockwaveTime"].value = self.shockwave_time
+        self.shockwave_time += 0.01 * self.dt
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
@@ -365,6 +377,8 @@ class App:
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
+                    self.screenTex.repeat_x = False
+                    self.screenTex.repeat_y = False
                     self.uiTex.release()
                     self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
                     self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)

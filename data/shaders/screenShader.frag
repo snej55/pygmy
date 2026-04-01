@@ -14,6 +14,9 @@ uniform float scrWidth;
 uniform float scrHeight;
 uniform float scrollX;
 uniform float scrollY;
+uniform vec2 shockwave;
+uniform float shockwaveTime;
+uniform vec3 shockParams = vec3(10.0, 0.8, 0.1);
 
 uniform float distortion = 5.0;
 uniform float fogStrength = 0.2;
@@ -41,6 +44,23 @@ void main()
             coords = TexCoord;
         }
     }
+
+    float aspectR = scrWidth / scrHeight;
+
+    vec2 corrUV = vec2(coords.x * aspectR, coords.y);
+    vec2 coorCenter = vec2(shockwave.x * aspectR, shockwave.y);
+    float dist = distance(corrUV, coorCenter);
+    if ((dist <= (shockwaveTime + shockParams.z)) && (dist >= (shockwaveTime - shockParams.z)))
+    {
+        float diff = (dist - shockwaveTime);
+        float powDiff = 1.0 - pow(abs(diff * shockParams.x), shockParams.y);
+        float diffTime = diff * powDiff;
+        vec2 diffUV = normalize(corrUV - coorCenter);
+
+        coords.x += (diffUV.x * diffTime) / aspectR;
+        coords.y += (diffUV.y * diffTime);
+    }
+
     vec2 uv = coords;
     uv.x += scrollX * texelSize.x;
     uv.y += scrollY * texelSize.y;

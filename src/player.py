@@ -368,6 +368,7 @@ class Player:
             angle = random.random() * math.pi * 2
             self.app.particles.append(Particle(self.app, 'particle', self.get_rect().center, [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], random.randint(0, 7)))
             self.app.cinders.append([list((self.get_rect().centerx, self.get_rect().bottom)), [self.movement[0] * speed, self.movement[1] * -1], random.randint(20, 30), (246, 242, 195)])
+        self.app.create_shockwave(self.get_rect().center)
         self.pos = pygame.Vector2(self.start_pos)
         self.movement = pygame.Vector2(0, 0)
         self.rebound = pygame.Vector2(0, 0)
