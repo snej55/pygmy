@@ -319,7 +319,6 @@ class Player:
 
     def die(self):
         self.ad = 0
-        self.movement = pygame.Vector2(0, 0)
         self.app.screen_shake = max(self.app.screen_shake, 16)
         for _ in range(random.randint(50, 60)):
             spread = 5
@@ -336,13 +335,25 @@ class Player:
             angle = random.random() * math.pi * 2
             speed = random.random() * 3
             self.app.sparks.append(
-                Spark(self.get_rect().center, angle, speed, [255, 255, 255])
+                Spark(self.get_rect().center, angle, speed, [246, 242, 195])
             )
         for _ in range(random.randint(30, 50)):
             angle = -math.pi * 0.5 + (random.random() - 0.5) 
             speed = random.random() + 1
             self.app.smoke.append([list(self.get_rect().center), [math.cos(angle) * speed, math.sin(angle) * speed], 1, random.randint(200, 255), 0, random.random() * 720 - 360, (200, 200, 255)])
+        for _ in range(random.randint(50, 60)):
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 5
+            self.app.particles.append(Particle(self.app, 'particle', self.get_rect().center, [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], random.randint(0, 7)))
+            self.app.particles[-1].speed += 0.1
+            self.app.cinders.append([list((self.get_rect().centerx, self.get_rect().bottom)), [math.cos(angle) * speed, math.sin(angle) * speed], random.randint(2, 20), (246, 242, 195)])
+        for _ in range(random.randint(1, 3)):
+            speed = random.random() * 5
+            angle = random.random() * math.pi * 2
+            self.app.particles.append(Particle(self.app, 'particle', self.get_rect().center, [math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], random.randint(0, 7)))
+            self.app.cinders.append([list((self.get_rect().centerx, self.get_rect().bottom)), [self.movement[0] * speed, self.movement[1] * -1], random.randint(20, 30), (246, 242, 195)])
         self.pos = pygame.Vector2(self.start_pos)
+        self.movement = pygame.Vector2(0, 0)
         self.app.slomo = 0.2
 
     def dash(self):

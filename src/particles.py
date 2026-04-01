@@ -74,3 +74,52 @@ class Bubble(Particle):
     def __init__(self, app, particle_type, pos, vel=[0, 0], frame=0, solid=False, friction=(1, 1)):
         super().__init__(app, particle_type, pos, vel, frame, solid, friction)
         self.speed = 0.5
+
+class PhysicsParticles:
+    def __init__(self, app, trail=False, friction=0.999, bounce=0.7, explode=False, gravity=0.125):
+        self.trail = trail
+        self.friction = friction
+        self.bounce = -bounce
+        self.particles = []
+        self.gravity = gravity
+        self.explode = explode
+        self.app = app
+    
+    def append(self, item):
+        self.particles.append(item)
+    
+    def update(self, surf, scroll=(0, 0)):
+        for particle in self.particles.copy():
+            speed = (abs(particle[1][0]) + abs(particle[1][1]))
+            particle[1][0] *= 0.999
+            particle[0][0] += particle[1][0] * self.app.dt
+            if self.app.tile_map.solid_check(particle[0]):
+                particle[0][0] -= particle[1][0] * self.app.dt
+                particle[1][0] *= self.bounce
+                particle[1][1] *= self.friction
+            particle[1][1] += self.gravity * self.app.dt
+            particle[1][1] *= 0.999
+            particle[0][1] += particle[1][1] * self.app.dt
+            if self.app.tile_map.solid_check(particle[0]):
+                particle[0][1] -= particle[1][1] * self.app.dt
+                particle[1][1] *= self.bounce
+                particle[1][0] *= self.friction
+            if self.trail:
+                angle = math.atan2(particle[1][1], particle[1][0])
+                scale = 0.5
+                pygame.draw.polygon(surf, particle[3], [
+                    (particle[0][0] - scroll[0], particle[0][1] - scroll[1]),
+                    (particle[0][0] - math.cos(angle + math.pi * 0.5) * scale - scroll[0], particle[0][1] - math.sin(angle + math.pi * 0.5) * scale - scroll[1]),
+                    (particle[0][0] - scroll[0] - particle[1][0] * 3 * scale, particle[0][1] - scroll[1] - particle[1][1] * 3 * scale),
+                    (particle[0][0] - math.cos(angle + math.pi * -0.5) * scale - scroll[0], particle[0][1] - math.sin(angle + math.pi * -0.5) * scale - scroll[1]),
+                ])
+            else:
+                pygame.draw.circle(surf, particle[3], (particle[0][0] - scroll[0], particle[0][1] - scroll[1]), particle[2] / 2)
+            particle[2] -= (particle[2] / 20 + 0.0000001) * self.app.dt
+            if self.explode:
+                if random.random() / self.app.dt / min(1, particle[2]) < 0.01:
+                    self.app.particles.append(Particle(self.app, 'explosion', (particle[0][0], particle[0][1] - 2), [(random.random() - 0.5) * 0.1, random.random() - 1], random.randint(3, 7) + 1))
+                if speed > 5:
+                    self.app.particles.append(Particle(self.app, 'particle', (particle[0][0], particle[0][1]), [0, 0], random.randint(2, 3)))
+            if particle[2] < 0:
+                self.particles.remove(particle)

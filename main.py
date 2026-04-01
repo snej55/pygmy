@@ -62,6 +62,8 @@ class App:
             "particle/feather": load_animation("particles/feather.png", 8, 8, 17),
             "particle/bubble": load_animation("particles/bubble.png", 4, 4, 8),
             "particle/explosion": load_animation("particles/explosion.png", 5, 5, 15),
+            "particle/particle": load_animation("particles/particle.png", 5, 5, 4),
+            "firefly": load_animation("particles/firefly.png", 5, 5, 20),
             "noise": load_image("noise.png")
         }
 
@@ -94,6 +96,8 @@ class App:
         self.kickup_surf = pygame.Surface((1, 1))
         self.sparks = []
         self.smoke = []
+        self.fireflies = []
+        self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
     
     def setup_gl(self):
         self.ctx = moderngl.create_context()
@@ -236,6 +240,7 @@ class App:
                 self.particles.remove(particle)
         self.update_kickup(render_scroll)
         self.update_sparks(render_scroll)
+        self.cinders.update(self.screen, render_scroll)
 
         self.screen.fblits([self.calc_smoke(smoke, render_scroll) for smoke in self.smoke.copy()])
         
