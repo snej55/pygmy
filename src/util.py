@@ -4,9 +4,14 @@ from pathlib import Path
 
 BASE_IMG_PATH = "data/images/"
 BASE_AUDIO_PATH = "data/audio/"
+BASE_FONT_PATH = "data/fonts/"
 
 def get_script_path():
     return str(Path(sys.argv[0]).resolve().parent) + "/"
+
+def load_font(path, size=8) -> pygame.Font:
+    print(f"Loaded font from `{get_script_path() + BASE_FONT_PATH + path}`")
+    return pygame.font.Font(get_script_path() + BASE_FONT_PATH + path, size)
 
 def load_image(path) -> pygame.Surface:
     surf = pygame.image.load(get_script_path() + BASE_IMG_PATH + path).convert()

@@ -84,7 +84,7 @@ class Editor:
         # flag if tile to place is on or off the grid
         self.grid = True
 
-        self.water_mode = False
+        self.mode = "normal"
         self.first_click = True
         self.water_click = [[0, 0], [0, 0]]
 
@@ -273,7 +273,7 @@ class Editor:
             math.floor((mouse_pos[1] / SCALE + self.scroll.y) / TILE_SIZE),
         ]
 
-        if not self.water_mode:
+        if self.mode == "normal":
             if self.click and self.grid:
                 if 0 <= mouse_pos[0] < LEVEL_WIDTH * CHUNK_SIZE and 0 <= mouse_pos[1] < LEVEL_HEIGHT * CHUNK_SIZE:
                     tile_loc = f"{mouse_pos[0]};{mouse_pos[1]}"
@@ -350,7 +350,9 @@ class Editor:
                     elif event.key == pygame.K_g:
                         self.grid = not self.grid
                     elif event.key == pygame.K_q:
-                        self.water_mode = not self.water_mode
+                        self.mode = "water"
+                    elif event.key == pygame.K_n:
+                        self.mode = "normal"
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         self.controls["right"] = False
@@ -365,7 +367,7 @@ class Editor:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.click = True
-                        if self.water_mode:
+                        if self.mode == "water":
                             mouse_pos = pygame.mouse.get_pos()
                             mouse_pos = [
                                 math.floor((mouse_pos[0] / SCALE + self.scroll.x) / TILE_SIZE) * TILE_SIZE,
@@ -387,7 +389,7 @@ class Editor:
                                 )
                     elif event.button == 3:
                         self.right_click = True
-                        if self.water_mode:
+                        if self.mode == "water":
                             mouse_pos = pygame.mouse.get_pos()
                             mouse_pos = [
                                 math.floor(mouse_pos[0] / SCALE + self.scroll.x),

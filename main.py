@@ -9,10 +9,12 @@ from src.sparks import *
 
 pygame.init()
 pygame.mixer.init()
+pygame.font.init()
 
 # window dimensions and scaling
 WIDTH, HEIGHT = 1200, 900
 SCALE = 4
+UI_SCALE = 2
 SCROLL_LIMIT = 8
 SMOKE_DELAY = 6
 
@@ -22,6 +24,7 @@ class App:
         # no need for separate scaling, pygbag scales canvas automatically
         self.display = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
+        self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
 
         # setup moderngl
         self.ctx = None
@@ -34,10 +37,15 @@ class App:
         self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.screenTex.swizzle = "BGRA"
 
+        self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
+        self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.uiTex.sizzle = "BGRA"
+
         self.water_surf = self.screen.copy()
         self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
         self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.waterTex.swizzle = "BGRA"
+
 
         self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
         self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -75,8 +83,11 @@ class App:
             "particle/explosion": load_animation("particles/explosion.png", 5, 5, 15),
             "particle/particle": load_animation("particles/particle.png", 5, 5, 4),
             "firefly": load_animation("particles/firefly.png", 5, 5, 20),
-            "noise": load_image("noise.png")
+            "noise": load_image("noise.png"),
+            "anchor": load_image("anchor.png")
         }
+
+        self.font = load_font("dogicapixel.ttf")
 
         self.noiseTex = self.ctx.texture(self.assets["noise"].get_size(), 4)
         self.noiseTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -87,6 +98,7 @@ class App:
         self.prog["noise"].value = 1
         self.prog["lightTex"].value = 2
         self.prog["waterTex"].value = 3
+        self.prog["uiTex"].value = 4
 
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
@@ -230,6 +242,8 @@ class App:
                 self.scroll[0] += (target_scroll[0] - self.scroll[0]) / 30 * self.dt
             if abs(target_scroll[1] - self.scroll[0]) > SCROLL_LIMIT:
                 self.scroll[1] += (target_scroll[1] - self.scroll[1]) / 30 * self.dt
+        
+        self.scroll[0] = max(self.scroll[0], 0)
 
         screen_shake_offset = (
             random.random() * self.screen_shake - self.screen_shake / 2,
@@ -312,8 +326,16 @@ class App:
         self.screenTex.release()
         self.lightTex.release()
         self.waterTex.release()
+        self.uiTex.release()
         pygame.quit()
         sys.exit()
+    
+    def renderUI(self):
+        self.ui_surf.fill((0, 0, 0))
+        
+        self.ui_surf.blit(self.font.render("Hello World", False, (255, 255, 255), None), (10, 10))
+
+        self.uiTex.write(self.ui_surf.get_view('1'))
 
     def run(self):
         while True:
@@ -334,10 +356,15 @@ class App:
                     self.ctx.viewport = (0, 0, width, height)
                     self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
                     self.screen = pygame.Surface((width // SCALE, height // SCALE))
+                    self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
                     self.screenTex.release()
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
+                    self.uiTex.release()
+                    self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
+                    self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    self.uiTex.sizzle = "BGRA"
                     self.waterTex.release()
                     self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -374,6 +401,7 @@ class App:
 
             # update game
             self.update()
+            self.renderUI()
 
             self.screenTex.write(self.screen.get_view('1'))
             self.screenTex.use(0)
@@ -381,6 +409,7 @@ class App:
             self.noiseTex.use(1)
             self.lightTex.use(2)
             self.waterTex.use(3)
+            self.uiTex.use(4)
 
             self.time += self.dt
             self.prog["time"].value = self.time

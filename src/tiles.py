@@ -64,10 +64,16 @@ class TileMap:
 
         for tile in data["level"]["tiles"]:
             tile_loc = f"{tile['pos'][0]};{tile['pos'][1]}"
+            img = None
+            try:
+                img = self.app.assets[f"tiles/{tile['type']}"][tile["variant"]].copy()
+            except KeyError:
+                pass
             self.tile_map[tile_loc] = {
                 "type": tile["type"],
                 "variant": tile["variant"],
                 "pos": tile["pos"],
+                "img": img
             }
 
         # load off grid tiles
@@ -181,7 +187,7 @@ class TileMap:
             levelMax[1] = max(levelMax[1], y)
         # levelMin[0] -= 100
         # levelMax[0] += 100
-        # levelMin[1] -= 100
+        levelMin[1] -= 10
         # levelMax[1] += 100
         
         queue = []

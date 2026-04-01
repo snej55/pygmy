@@ -7,6 +7,7 @@ uniform sampler2D screenTex;
 uniform sampler2D noise;
 uniform sampler2D lightTex;
 uniform sampler2D waterTex;
+uniform sampler2D uiTex;
 
 uniform float time;
 uniform float scrWidth;
@@ -19,6 +20,12 @@ uniform float fogStrength = 0.2;
 
 void main()
 {
+    vec4 ui = texture(uiTex, TexCoord);
+    if (ui.r + ui.b + ui.g > 0.0)
+    {
+        FragColor = ui;
+        return;
+    }
     vec2 texelSize = vec2(1.0 / scrWidth, 1.0 / scrHeight);
     vec2 coords = TexCoord;
     vec3 water = texture(waterTex, TexCoord).rgb;
