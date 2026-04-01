@@ -84,7 +84,9 @@ class App:
             "particle/particle": load_animation("particles/particle.png", 5, 5, 4),
             "firefly": load_animation("particles/firefly.png", 5, 5, 20),
             "noise": load_image("noise.png"),
-            "anchor": load_image("anchor.png")
+            "anchor": load_image("anchor.png"),
+            "blaster": load_animation("blaster.png", 21, 21, 4),
+            "bullet": load_image("bullet.png")
         }
 
         self.font = load_font("dogicapixel.ttf")
@@ -245,7 +247,7 @@ class App:
                 self.scroll[1] += (target_scroll[1] - self.scroll[1]) / 30 * self.dt
         
         self.scroll[0] = max(self.scroll[0], 0)
-
+        
         screen_shake_offset = (
             random.random() * self.screen_shake - self.screen_shake / 2,
             random.random() * self.screen_shake - self.screen_shake / 2,
@@ -259,6 +261,7 @@ class App:
 
         self.tile_map.draw_decor(self.screen, render_scroll)
         self.tile_map.draw(self.screen, render_scroll)
+        self.tile_map.update_blasters(self.screen, render_scroll, self.dt)
         self.player.draw(self.screen, render_scroll)
 
         average_gust = 0

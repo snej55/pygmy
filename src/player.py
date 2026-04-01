@@ -330,6 +330,12 @@ class Player:
     def die(self):
         self.ad = 0
         self.app.screen_shake = max(self.app.screen_shake, 16)
+        for _ in range(random.randint(20, 30)):
+            angle = random.random() * math.pi * 2 
+            speed = random.random() * 0.5
+            pvel = [math.cos(angle) * speed, math.sin(angle) * speed]
+            self.app.particles.append(Particle(self.app, 'feather', self.get_rect().center, pvel, random.randint(0, 7), True))
+            self.app.particles[-1].particle_type = "leaf"
         for _ in range(random.randint(50, 60)):
             spread = 5
             self.app.particles.append(Particle(self.app, "explosion", [self.get_rect().centerx + random.random() * spread - spread / 2, self.get_rect().centery + random.random() * spread - spread / 2], [0, random.random() * -1 - 0.5], random.random(), False))

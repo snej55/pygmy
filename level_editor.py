@@ -60,7 +60,8 @@ class Editor:
             "drop": load_images("tiles/drop/"),
             "spikes": self.load_sheet(pygame.image.load("data/images/tiles/spikes.png").convert(), [8, 8]),
             "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32]),
-            "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12])
+            "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12]),
+            "blaster": self.load_sheet(pygame.image.load("data/images/blaster.png"), [21, 21])
         }
         self.anchor = load_image("anchor.png")
         # {"start": [x, y], "end": [x, y]}

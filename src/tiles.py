@@ -3,6 +3,7 @@ import pygame, math, time
 from .util import read_json
 from .grass import GrassManager
 from .water import Water
+from .blaster import Blaster
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
@@ -20,6 +21,7 @@ class TileMap:
         self.grass_manager = None
         self.light_map = {}
         self.anchors = []
+        self.blasters = []
     
     def extract_springs(self):
         self.springs = []
@@ -91,7 +93,15 @@ class TileMap:
         
         self.extract_springs()
         self.extract_grass()
+        self.extract_blasters()
         self.calculate_light_map()
+    
+    def extract_blasters(self):
+        self.blasters = []
+        for loc in self.tile_map.copy():
+            if self.tile_map[loc]["type"] == "blaster":
+                self.blasters.append(Blaster(self.app, [self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE]))
+                del self.tile_map[loc]
     
     def extract_grass(self):
         grass_locs = []
@@ -119,6 +129,10 @@ class TileMap:
             # print(dist)
 
             anchor["angle"] += math.cos(anchor["time"] * 0.01) * dt * 10
+    
+    def update_blasters(self, surf, scroll, dt):
+        for blaster in self.blasters:
+            blaster.update(surf, scroll, dt, self)
     
     def extract(self, id_pairs, keep=False):
         matches = []
