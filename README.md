@@ -9,10 +9,10 @@ plot:
 escape prison
 
 components:
-vfx: shockwaves, light sources, slomo, particles, distortion shockwaves, slime, movement particles, feather particles
 
 extra:
 pet
+slime?
 add angular vel to springs
 
 coins/collectables

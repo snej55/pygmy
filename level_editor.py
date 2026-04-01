@@ -18,7 +18,7 @@ LEVEL_HEIGHT = 20
 MAP = "data/maps/0.json"
 
 # tile sets that can be autotiled
-AUTO_TILE_TYPES = {"grass", "bricks"}
+AUTO_TILE_TYPES = {"grass", "bricks", "wood", "autumn"}
 AUTO_TILE_MAP = {'0011': 1, '1011': 2, '1001': 3, '0001': 4, '0111': 5, '1111': 6, '1101': 7, '0101': 8,
                 '0110': 9, '1110': 10, '1100': 11, '0100': 12, '0010': 13, '1010': 14, '1000': 15, '0000': 16}
 
@@ -54,7 +54,9 @@ class Editor:
         # assets
         self.assets = {
             "grass": self.load_tileset(pygame.image.load("data/images/tiles/grass.png").convert()),
+            "autumn": self.load_tileset(pygame.image.load("data/images/tiles/autumn.png").convert()),
             "bricks": self.load_tileset(pygame.image.load("data/images/tiles/bricks.png").convert()),
+            "wood": self.load_tileset(pygame.image.load("data/images/tiles/wood.png").convert()),
             "spring": [load_image("tiles/spring.png")],
             "grass_key": [load_image("tiles/grass_key.png")],
             "drop": load_images("tiles/drop/"),
@@ -171,7 +173,7 @@ class Editor:
                     str(math.floor(tile_pos[0] / TILE_SIZE) + shift[0]) + ";" + str(math.floor(tile_pos[1] / TILE_SIZE) + shift[1])
                 )
                 if check_loc in self.tile_map:
-                    if (self.tile_map[check_loc]["type"] in AUTO_TILE_TYPES) and self.tile_map[check_loc]["type"] == tile["type"]:
+                    if (self.tile_map[check_loc]["type"] in AUTO_TILE_TYPES):
                         aloc += "1"
                     else:
                         aloc += "0"

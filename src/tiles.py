@@ -7,7 +7,7 @@ from .blaster import Blaster
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
-PHYSICS_TILES = {"grass", "bricks"}
+PHYSICS_TILES = {"grass", "bricks", "wood", "autumn"}
 DANGER_TILES = ["spikes"]
 
 class TileMap:
