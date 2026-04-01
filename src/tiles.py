@@ -1,4 +1,4 @@
-import pygame, math
+import pygame, math, time
 
 from .util import read_json
 from .grass import GrassManager
@@ -18,6 +18,7 @@ class TileMap:
         self.water = []
         self.grass_map = {}
         self.grass_manager = None
+        self.light_map = {}
     
     def extract_springs(self):
         self.springs = []
@@ -79,6 +80,7 @@ class TileMap:
         
         self.extract_springs()
         self.extract_grass()
+        self.calculate_light_map()
     
     def extract_grass(self):
         grass_locs = []
@@ -164,6 +166,51 @@ class TileMap:
                         self.app.assets[f"tiles/{tile["type"]}"][tile["variant"]],
                         (x * TILE_SIZE - scroll[0], y * TILE_SIZE - scroll[1]),
                     )
+    
+    def calculate_light_map(self):
+        print("Generating light map...")
+        start = time.time()
+        self.light_map = {}
+        levelMin = [1000000, 1000000]
+        levelMax = [0, 0]
+        for loc in self.tile_map:
+            x, y = [int(c) for c in loc.split(';')]
+            levelMin[0] = min(levelMin[0], x)
+            levelMin[1] = min(levelMin[1], y)
+            levelMax[0] = max(levelMax[0], x)
+            levelMax[1] = max(levelMax[1], y)
+        
+        queue = []
+        for x in range(levelMax[0] - levelMin[0]):
+            for y in range(levelMax[1] - levelMin[1]):
+                loc = f'{x};{y}'
+                if not (loc in self.tile_map):
+                    queue.append({"pos": [x, y], "attenuation": 1.0})
+                elif not (self.tile_map[loc]["type"] in PHYSICS_TILES):
+                    queue.append({"pos": [x, y], "attenuation": 1.0})
+        
+        absorb = 0.3
+        while len(queue) > 0:
+            for tile in queue.copy():
+                self.light_map[f"{tile["pos"][0]};{tile["pos"][1]}"] = tile["attenuation"]
+                for shift in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+                    pos = [tile["pos"][0] + shift[0], tile["pos"][1] + shift[1]]
+                    check_loc = f"{pos[0]};{pos[1]}"
+                    if not (check_loc in self.light_map) and (levelMin[0] <= pos[0] < levelMax[0] and levelMin[1] <= pos[1] < levelMax[1]):
+                        solid = False
+                        if check_loc in self.tile_map:
+                            if self.tile_map[check_loc]["type"] in PHYSICS_TILES:
+                                solid = True
+                        if solid:
+                            self.light_map[check_loc] = tile["attenuation"] * absorb
+                            queue.append({"pos": pos, "attenuation": tile["attenuation"] * absorb})
+                        else:
+                            self.light_map[check_loc] = 1.0
+                            queue.append({"pos": pos, "attenuation": 1.0})
+                queue.remove(tile)
+            # print(f"{len(self.light_map)}/{(levelMax[0] - levelMin[0]) * (levelMax[1] - levelMin[1])}")
+        print(f"Generated light map! ({(time.time() - start) * 1000 :.2f} ms)")
+                
 
     def get_light_data(self, surf, scroll) -> pygame.Surface:
         grid_size = (math.ceil(surf.get_width() / TILE_SIZE) + 2, math.ceil(surf.get_height() / TILE_SIZE) + 2)
@@ -179,7 +226,8 @@ class TileMap:
             for y in range(grid_size[1]):
                 tile_y = offset_y + y
                 loc = f"{tile_x};{tile_y}"
-                if loc in self.tile_map and self.tile_map[loc]["type"] in PHYSICS_TILES:
-                    light_surf.set_at((x, y), (0, 0, 0))
+                if loc in self.light_map:
+                    alpha = self.light_map[loc] * 255
+                    light_surf.set_at((x, y), (alpha, alpha, alpha))
 
         return light_surf

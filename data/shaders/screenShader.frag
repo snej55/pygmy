@@ -26,6 +26,7 @@ void main()
     float pNoise = (noise1 + noise2) * 0.5;
 
     vec4 tex = texture(screenTex, TexCoord);
+    float grey = (tex.r + tex.g + tex.b) * 0.3333;
 
     vec2 scrUV = TexCoord * vec2(scrWidth, scrHeight);
     vec2 scroll = vec2(scrollX, scrollY);
@@ -41,7 +42,10 @@ void main()
     vec2 maxUV = (lightSize - vec2(0.5)) / lightSize;
     lightUV = clamp(lightUV, minUV, maxUV);
 
-    vec4 light = texture(lightTex, lightUV - texelSize * 4.0);
-
-    FragColor = vec4(mix(vec3(0.65, 0.6, 0.59), tex.rgb, 1.0 - pNoise * pNoise * pNoise) * light.rgb, 1.0);
+    vec3 light;
+    if (grey > 0.0)
+        light = texture(lightTex, lightUV - texelSize * 4.0).rgb;
+    else
+        light = vec3(1.0);
+    FragColor = vec4(mix(vec3(0.65, 0.6, 0.59), tex.rgb, 1.0 - pNoise * pNoise * pNoise) * light, 1.0);
 }
