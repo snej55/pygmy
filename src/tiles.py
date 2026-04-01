@@ -1,4 +1,4 @@
-import pygame
+import pygame, math
 
 from .util import read_json
 from .grass import GrassManager
@@ -164,3 +164,22 @@ class TileMap:
                         self.app.assets[f"tiles/{tile["type"]}"][tile["variant"]],
                         (x * TILE_SIZE - scroll[0], y * TILE_SIZE - scroll[1]),
                     )
+
+    def get_light_data(self, surf, scroll) -> pygame.Surface:
+        grid_size = (math.ceil(surf.get_width() / TILE_SIZE) + 2, math.ceil(surf.get_height() / TILE_SIZE) + 2)
+
+        light_surf = pygame.Surface(grid_size)
+        light_surf.fill((255, 255, 255))
+
+        offset_x = math.floor(scroll[0] / TILE_SIZE) - 1
+        offset_y = math.floor(scroll[1] / TILE_SIZE) - 1
+
+        for x in range(grid_size[0]):
+            tile_x = offset_x + x
+            for y in range(grid_size[1]):
+                tile_y = offset_y + y
+                loc = f"{tile_x};{tile_y}"
+                if loc in self.tile_map and self.tile_map[loc]["type"] in PHYSICS_TILES:
+                    light_surf.set_at((x, y), (0, 0, 0))
+
+        return light_surf

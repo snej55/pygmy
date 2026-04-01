@@ -34,6 +34,12 @@ class App:
         self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.screenTex.swizzle = "BGRA"
 
+        self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
+        self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.lightTex.swizzle = "BGRA"
+        self.lightTex.repeat_x = False
+        self.lightTex.repeat_y = False
+
         self.clock = pygame.time.Clock()
 
         # delta time
@@ -74,6 +80,7 @@ class App:
         self.noiseTex.repeat_y = True
         self.noiseTex.write(self.assets["noise"].get_view('1'))
         self.prog["noise"].value = 1
+        self.prog["lightTex"].value = 2
 
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
@@ -98,6 +105,9 @@ class App:
         self.smoke = []
         self.fireflies = []
         self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
+    
+    def get_grid_size(self):
+        return (math.ceil(self.screen.get_width() / TILE_SIZE) + 2, math.ceil(self.screen.get_height() / TILE_SIZE) + 2)
     
     def setup_gl(self):
         self.ctx = moderngl.create_context()
@@ -260,6 +270,9 @@ class App:
                     if random.random() / self.dt < 0.5:
                         spread = 5
                         self.particles.append(Bubble(self, "bubble", [self.player.get_rect().centerx + random.random() * spread - spread / 2, self.player.get_rect().centery + random.random() * spread - spread /2], [0, 0], random.random() * 2, True))
+        
+        light_surf = self.tile_map.get_light_data(self.screen, render_scroll)
+        self.lightTex.write(light_surf.get_view('1'))
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
@@ -271,6 +284,7 @@ class App:
     def close(self):
         self.noiseTex.release()
         self.screenTex.release()
+        self.lightTex.release()
         pygame.quit()
         sys.exit()
 
@@ -297,6 +311,12 @@ class App:
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
+                    self.lightTex.release()
+                    self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
+                    self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
+                    self.lightTex.swizzle = "BGRA"
+                    self.lightTex.repeat_x = False
+                    self.lightTex.repeat_y = False
                 if event.type == pygame.KEYDOWN:
                     if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
                         self.player.controls["up"] = True
@@ -327,6 +347,7 @@ class App:
             self.screenTex.use(0)
 
             self.noiseTex.use(1)
+            self.lightTex.use(2)
 
             self.time += self.dt
             self.prog["time"].value = self.time
