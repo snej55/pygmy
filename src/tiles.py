@@ -184,12 +184,17 @@ class TileMap:
         for x in range(levelMax[0] - levelMin[0]):
             for y in range(levelMax[1] - levelMin[1]):
                 loc = f'{x};{y}'
+                tile_rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                attenuation = 1.0
+                for water in self.water:
+                    if water.get_rect().colliderect(tile_rect):
+                        attenuation = 0.7
                 if not (loc in self.tile_map):
-                    queue.append({"pos": [x, y], "attenuation": 1.0})
+                    queue.append({"pos": [x, y], "attenuation": attenuation})
                 elif not (self.tile_map[loc]["type"] in PHYSICS_TILES):
-                    queue.append({"pos": [x, y], "attenuation": 1.0})
+                    queue.append({"pos": [x, y], "attenuation": attenuation})
         
-        absorb = 0.3
+        absorb = 0.7
         while len(queue) > 0:
             for tile in queue.copy():
                 self.light_map[f"{tile["pos"][0]};{tile["pos"][1]}"] = tile["attenuation"]
@@ -202,11 +207,14 @@ class TileMap:
                             if self.tile_map[check_loc]["type"] in PHYSICS_TILES:
                                 solid = True
                         if solid:
-                            self.light_map[check_loc] = tile["attenuation"] * absorb
-                            queue.append({"pos": pos, "attenuation": tile["attenuation"] * absorb})
+                            attenuation = max(tile["attenuation"] * absorb, 0.0)
+                            self.light_map[check_loc] = attenuation
+                            queue.append({"pos": pos, "attenuation": attenuation})
                         else:
-                            self.light_map[check_loc] = 1.0
-                            queue.append({"pos": pos, "attenuation": 1.0})
+                            tile_rect = pygame.Rect(pos[0] * TILE_SIZE, pos[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                            attenuation = 1.0
+                            self.light_map[check_loc] = attenuation
+                            queue.append({"pos": pos, "attenuation": attenuation})
                 queue.remove(tile)
             # print(f"{len(self.light_map)}/{(levelMax[0] - levelMin[0]) * (levelMax[1] - levelMin[1])}")
         print(f"Generated light map! ({(time.time() - start) * 1000 :.2f} ms)")
@@ -216,7 +224,7 @@ class TileMap:
         grid_size = (math.ceil(surf.get_width() / TILE_SIZE) + 2, math.ceil(surf.get_height() / TILE_SIZE) + 2)
 
         light_surf = pygame.Surface(grid_size)
-        light_surf.fill((255, 255, 255))
+        light_surf.fill((0, 0, 0))
 
         offset_x = math.floor(scroll[0] / TILE_SIZE) - 1
         offset_y = math.floor(scroll[1] / TILE_SIZE) - 1
@@ -227,7 +235,9 @@ class TileMap:
                 tile_y = offset_y + y
                 loc = f"{tile_x};{tile_y}"
                 if loc in self.light_map:
-                    alpha = self.light_map[loc] * 255
-                    light_surf.set_at((x, y), (alpha, alpha, alpha))
+                    r = self.light_map[loc]
+                    g = self.light_map[loc] ** 1.2
+                    b = self.light_map[loc] ** 1.5
+                    light_surf.set_at((x, y), (r * 255, g * 255, b * 255))
 
         return light_surf

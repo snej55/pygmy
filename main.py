@@ -34,6 +34,11 @@ class App:
         self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
         self.screenTex.swizzle = "BGRA"
 
+        self.water_surf = self.screen.copy()
+        self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
+        self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.waterTex.swizzle = "BGRA"
+
         self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
         self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
         self.lightTex.swizzle = "BGRA"
@@ -81,6 +86,7 @@ class App:
         self.noiseTex.write(self.assets["noise"].get_view('1'))
         self.prog["noise"].value = 1
         self.prog["lightTex"].value = 2
+        self.prog["waterTex"].value = 3
 
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
@@ -104,7 +110,24 @@ class App:
         self.sparks = []
         self.smoke = []
         self.fireflies = []
+        for _ in range(10):
+            # [pos, dir, angle]
+            self.fireflies.append([[random.random() * 10000, random.random() * 10000], random.random() * math.pi * 2, random.random() * 10 + 10, random.random() * 4 * random.choice([-1, 1]), random.random() * 50])
         self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
+    
+    def update_fireflies(self, scroll):
+        for fly in self.fireflies:
+            fly[0][0] += math.cos(fly[1]) * fly[2] * self.dt * 0.05
+            fly[0][1] += math.sin(fly[1]) * fly[2] * self.dt * 0.05
+            fly[1] += fly[3] * self.dt * 0.003
+            if random.random() * 4 < self.dt:
+                fly[3] = random.random() * 2 * random.choice([-1, 1])
+                fly[2] = random.random() * 5 + 5
+            loc = (((fly[0][0] - scroll[0]) % self.screen.get_width()), ((fly[0][1] - scroll[1]) % self.screen.get_height()))
+            fly[4] = (fly[4] + 0.1 * self.dt) % len(self.assets["firefly"])
+            surf = self.assets["firefly"][math.floor(fly[4])]
+            surf.set_alpha(100)
+            self.water_surf.blit(surf, loc)
     
     def get_grid_size(self):
         return (math.ceil(self.screen.get_width() / TILE_SIZE) + 2, math.ceil(self.screen.get_height() / TILE_SIZE) + 2)
@@ -254,14 +277,17 @@ class App:
 
         self.screen.fblits([self.calc_smoke(smoke, render_scroll) for smoke in self.smoke.copy()])
         
+        self.water_surf.fill((0, 0, 0))
+        self.update_fireflies(render_scroll)
         hit = False
         for water in self.tile_map.water:
-            water.update(self.screen, self.player, render_scroll, self.dt)
+            water.update(self.water_surf, self.player, render_scroll, self.dt)
             if water.get_rect().colliderect(self.player.get_rect()):
                 if not self.player.water:
                     self.player.movement *= 0.6
                 self.player.water = True
                 hit = True
+        self.waterTex.write(self.water_surf.get_view('1'))
         if not hit:
             self.player.water = False
         else:
@@ -285,6 +311,7 @@ class App:
         self.noiseTex.release()
         self.screenTex.release()
         self.lightTex.release()
+        self.waterTex.release()
         pygame.quit()
         sys.exit()
 
@@ -311,6 +338,11 @@ class App:
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
                     self.screenTex.swizzle = "BGRA"
+                    self.waterTex.release()
+                    self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
+                    self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    self.waterTex.swizzle = "BGRA"
+                    self.water_surf = self.screen.copy()
                     self.lightTex.release()
                     self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
                     self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -348,6 +380,7 @@ class App:
 
             self.noiseTex.use(1)
             self.lightTex.use(2)
+            self.waterTex.use(3)
 
             self.time += self.dt
             self.prog["time"].value = self.time

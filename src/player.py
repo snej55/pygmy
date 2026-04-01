@@ -354,6 +354,11 @@ class Player:
             self.app.cinders.append([list((self.get_rect().centerx, self.get_rect().bottom)), [self.movement[0] * speed, self.movement[1] * -1], random.randint(20, 30), (246, 242, 195)])
         self.pos = pygame.Vector2(self.start_pos)
         self.movement = pygame.Vector2(0, 0)
+        self.rebound = pygame.Vector2(0, 0)
+        self.flip = False
+        self.grounded = 100
+        self.falling = 100
+        self.jumping = 100
         self.app.slomo = 0.2
 
     def dash(self):
