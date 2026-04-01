@@ -231,6 +231,7 @@ class App:
         self.player.update(self.dt, self.tile_map)
         self.tile_map.update_springs(self.dt, self.player)
         self.tile_map.grass_manager.update([self.player.get_rect()])
+        self.tile_map.update_anchors(self.dt)
 
         if self.player.ad > self.player.death_time:
             lookahead = 10
@@ -356,7 +357,7 @@ class App:
                     self.ctx.viewport = (0, 0, width, height)
                     self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
                     self.screen = pygame.Surface((width // SCALE, height // SCALE))
-                    self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
+                    self.ui_surf = pygame.Surface(((width // UI_SCALE, height // UI_SCALE)))
                     self.screenTex.release()
                     self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)

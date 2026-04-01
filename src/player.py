@@ -291,6 +291,16 @@ class Player:
         for rect in tile_map.danger_rects_around(self.get_rect().center):
             if rect.colliderect(self.get_rect()):
                 self.die()
+                return
+        
+        r = self.get_rect()
+        for anchor in tile_map.anchors:
+            closest_x = max(r.left, min(anchor["pos"][0] + 10, r.right))
+            closest_y = max(r.top, min(anchor["pos"][1] + 10, r.bottom))
+
+            if ((anchor["pos"][0] + 10 - closest_x) ** 2 + (anchor["pos"][1] + 10 - closest_y) ** 2 < 100):
+                self.die()
+                return
     
     def handle_animation(self, dt):
         if self.falling > 5:
@@ -359,7 +369,7 @@ class Player:
         self.grounded = 100
         self.falling = 100
         self.jumping = 100
-        self.app.slomo = 0.2
+        self.app.slomo = 0.05
 
     def dash(self):
         if not self.dashing:

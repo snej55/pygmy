@@ -19,6 +19,7 @@ class TileMap:
         self.grass_map = {}
         self.grass_manager = None
         self.light_map = {}
+        self.anchors = []
     
     def extract_springs(self):
         self.springs = []
@@ -61,6 +62,7 @@ class TileMap:
         self.tile_map = {}
         self.off_grid = []
         self.water = []
+        self.anchors = []
 
         for tile in data["level"]["tiles"]:
             tile_loc = f"{tile['pos'][0]};{tile['pos'][1]}"
@@ -84,6 +86,9 @@ class TileMap:
         for water in data["level"]["water"]:
             self.water.append(Water(water[0], water[1], [water[2], water[3]], 3))
         
+        for anchor in data["level"]["anchors"]:
+            self.anchors.append({"start": anchor["start"].copy(), "end": anchor["end"].copy(), "angle": 0, "pos": anchor["start"].copy(), "time": 0})
+        
         self.extract_springs()
         self.extract_grass()
         self.calculate_light_map()
@@ -101,6 +106,19 @@ class TileMap:
         
         self.grass_manager = GrassManager(self.app, self.app.assets["grass"])
         self.grass_manager.load(self.grass_map, 8, 2)
+    
+    def update_anchors(self, dt):
+        for anchor in self.anchors:
+            anchor["time"] += dt
+            target = anchor["end"]
+            base = anchor["start"]
+            
+            dist = (math.sin(anchor["time"] * 0.01) + 1) * 0.5
+            anchor["pos"][0] = base[0] + (target[0] - base[0]) * dist
+            anchor["pos"][1] = base[1] + (target[1] - base[1]) * dist
+            # print(dist)
+
+            anchor["angle"] += math.cos(anchor["time"] * 0.01) * dt * 10
     
     def extract(self, id_pairs, keep=False):
         matches = []
@@ -172,7 +190,12 @@ class TileMap:
                         self.app.assets[f"tiles/{tile["type"]}"][tile["variant"]],
                         (x * TILE_SIZE - scroll[0], y * TILE_SIZE - scroll[1]),
                     )
-    
+        
+        anchor_img = self.app.assets["anchor"]
+        for anchor in self.anchors:
+            rot_surf = pygame.transform.rotate(anchor_img, anchor["angle"])            
+            surf.blit(rot_surf, (anchor["pos"][0] + int(anchor_img.get_width() / 2) - int(rot_surf.get_width() / 2) - scroll[0], anchor["pos"][1] + int(anchor_img.get_height() / 2) - int(rot_surf.get_height() / 2) - scroll[1]))
+
     def calculate_light_map(self):
         print("Generating light map...")
         start = time.time()
