@@ -82,17 +82,17 @@ class Player:
                             r.right = rect.left
                             self.collisions["right"] = True
                             if not self.dashing:
-                                for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                for _ in range(int(self.movement.y) + int(self.movement.x)):
                                     speed = random.random() + 0.2
-                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.right - 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         if fm.x < 0:
                             r.left = rect.right
                             self.collisions["left"] = True
                             if not self.dashing:
-                                for _ in range(int(fm.y) ** 2 + int(fm.x * 2) ** 2):
+                                for _ in range(int(self.movement.y) + int(self.movement.x)):
                                     speed = random.random() + 0.2
-                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.left + 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.pos.x = r.x
                         self.movement.x = 0
@@ -107,17 +107,17 @@ class Player:
                             self.falling = 0
                             self.collisions["down"] = True
                             if not self.dashing:
-                                for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                for _ in range(int(self.movement.y) + int(self.movement.x)):
                                     speed = random.random() + 0.2
-                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.centerx, r.bottom - 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         elif fm.y < 0:
                             r.top = rect.bottom
                             self.collisions["up"] = True
                             if not self.dashing:
-                                for _ in range(int(fm.y) ** 2 + int(fm.x) ** 2):
+                                for _ in range(int(self.movement.y) + int(self.movement.x)):
                                     speed = random.random() + 0.2
-                                    angle = math.atan2(-fm.y, -fm.x) + random.random() * math.pi * 0.25
+                                    angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.centerx, r.top + 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
                         self.movement.y = 0
                         self.pos.y = r.y

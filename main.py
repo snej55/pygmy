@@ -503,7 +503,7 @@ class App:
             pygame.display.set_caption(
                 f"FPS: {self.clock.get_fps() :.1f} Display: {self.screen.get_width()} * {self.screen.get_height()}"
             )
-            self.clock.tick(144)
+            self.clock.tick(60)
 
 if __name__ == "__main__":
     App().run()
