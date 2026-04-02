@@ -23,7 +23,6 @@ class App:
         print(f"Running from `{get_script_path()}`")
         # no need for separate scaling, pygbag scales canvas automatically
         self.display = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
-        self.fps = pygame.display.get_current_refresh_rate()
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
         self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
 
@@ -139,7 +138,7 @@ class App:
 
         self.fade = 0
         self.fade_vel = 0
-        self.load_level(1)
+        self.load_level(0)
     
     def load_level(self, level):
         self.level = level
@@ -504,7 +503,7 @@ class App:
             pygame.display.set_caption(
                 f"FPS: {self.clock.get_fps() :.1f} Display: {self.screen.get_width()} * {self.screen.get_height()}"
             )
-            self.clock.tick(self.fps)
+            self.clock.tick(144)
 
 if __name__ == "__main__":
     App().run()
