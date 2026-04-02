@@ -90,7 +90,8 @@ class App:
             "noise": load_image("noise.png"),
             "anchor": load_image("anchor.png"),
             "blaster": load_animation("blaster.png", 21, 21, 4),
-            "bullet": load_image("bullet.png")
+            "bullet": load_image("bullet.png"),
+            "portal": load_image("portal.png")
         }
 
         self.font = load_font("dogicapixel.ttf")
@@ -110,6 +111,7 @@ class App:
         self.screen_shake = 0
 
         self.tile_map = TileMap(self)
+        self.level = 0
         self.tile_map.load("data/maps/1.json")
         self.leaf_spawners = []
         for tree in self.tile_map.extract([('large_decor', 0), ('large_decor', 1), ('large_decor', 2), ('large_decor', 3)], keep=True):
@@ -117,9 +119,6 @@ class App:
                 self.leaf_spawners.append((pygame.Rect(2 + tree['pos'][0], 8 + tree['pos'][1], 19, 17), True))
             else:
                 self.leaf_spawners.append((pygame.Rect(tree['pos'][0], tree['pos'][1] + 10, 12, 2), False))
-
-        self.player = Player(self, [6, 8], self.tile_map.start_pos)
-        self.follow_pos = self.player.get_rect().center
 
         self.particles = []
         self.wind = ([0, 10], [0, 15], [0, 5])
@@ -134,6 +133,34 @@ class App:
         self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
         self.shockwave_time = 1000
         self.shockwave_center = [0, 0]
+        self.player = Player(self, [6, 8], self.tile_map.start_pos)
+        self.follow_pos = self.player.get_rect().center
+
+        self.fade = 0
+        self.fade_vel = 0
+        self.load_level(1)
+    
+    def load_level(self, level):
+        self.level = level
+        path = "data/maps/" + str(level) + ".json"
+        self.tile_map.load(path)
+        self.leaf_spawners = []
+        for tree in self.tile_map.extract([('large_decor', 0), ('large_decor', 1), ('large_decor', 2), ('large_decor', 3)], keep=True):
+            if tree['type'] == 'large_decor':
+                self.leaf_spawners.append((pygame.Rect(2 + tree['pos'][0], 8 + tree['pos'][1], 19, 17), True))
+            else:
+                self.leaf_spawners.append((pygame.Rect(tree['pos'][0], tree['pos'][1] + 10, 12, 2), False))
+        self.particles = []
+        self.kickup = []
+        self.sparks = []
+        self.smoke = []
+        self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
+        self.shockwave_time = 1000
+        self.shockwave_center = [0, 0]
+        self.player = Player(self, [6, 8], self.tile_map.start_pos)
+        self.follow_pos = self.player.get_rect().center
+        self.scroll = pygame.Vector2(0, 0)
+        self.screen_shake = 0
     
     def create_shockwave(self, pos):
         self.shockwave_time = 0
@@ -273,6 +300,17 @@ class App:
         self.tile_map.draw_decor(self.screen, render_scroll)
         self.tile_map.draw(self.screen, render_scroll)
         self.tile_map.update_blasters(self.screen, render_scroll, self.dt)
+        if self.fade == 0:
+            self.screen.blit(self.assets["portal"], (self.tile_map.portal_pos[0] - render_scroll[0], self.tile_map.portal_pos[1] - render_scroll[1] + math.sin(self.time * 0.05) * 4))
+        if self.player.get_rect().colliderect(pygame.Rect(self.tile_map.portal_pos[0], self.tile_map.portal_pos[1], 10, 12)):
+            self.fade_vel = 0.02
+            self.screen_shake = 16
+            for i, color in enumerate(self.tile_map.portal_colors):
+                if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
+                    angle = random.random() * math.pi * 2
+                    speed = random.random() - 0.5
+                    self.kickup.append([[self.tile_map.portal_pos[0] + (i % 10), self.tile_map.portal_pos[1] + math.floor(i / 10)], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
+            self.tile_map.portal_pos = [-10000, -10000]
         self.player.draw(self.screen, render_scroll)
 
         average_gust = 0
@@ -332,7 +370,9 @@ class App:
         center = [(self.shockwave_center[0] - render_scroll[0]) / self.screen.get_width(), (self.shockwave_center[1] - render_scroll[1]) / self.screen.get_height()]
         self.prog["shockwave"].value = tuple(center)
         self.prog["shockwaveTime"].value = self.shockwave_time
-        self.shockwave_time += 0.01 * self.dt
+        self.shockwave_time += 0.001 * self.dt
+        self.shockwave_time += (self.shockwave_time * 1.5 - self.shockwave_time) * self.dt
+        self.shockwave_time = min(self.shockwave_time, 1000000)
     
     def get_texture(self, surf):
         texture = self.ctx.texture(surf.get_size(), 4)
@@ -354,6 +394,22 @@ class App:
         self.ui_surf.fill((0, 0, 0))
         
         self.ui_surf.blit(self.font.render("Hello World", False, (255, 255, 255), None), (10, 10))
+
+        self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
+        if self.fade == 1:
+            self.fade_vel = -0.02
+            self.load_level(self.level + 1)
+        
+        width = 200
+        if self.fade > 0:
+            if self.fade_vel > 0:
+                for x in range(math.ceil(self.ui_surf.get_width() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width, 0, width / 2, self.ui_surf.get_height() * self.fade * 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width + width / 2, self.ui_surf.get_height() * (1 - self.fade * 2), width / 2, self.ui_surf.get_height() * self.fade * 2))
+            else:
+                for y in range(math.ceil(self.ui_surf.get_height() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (0, y * width, self.ui_surf.get_width() * self.fade * 2, width / 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (self.ui_surf.get_width() * (1 - self.fade * 2), y * width + width / 2, self.ui_surf.get_width() * self.fade * 2, width / 2))
 
         self.uiTex.write(self.ui_surf.get_view('1'))
 

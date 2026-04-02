@@ -65,7 +65,8 @@ class Editor:
             "large_decor": self.load_sheet(pygame.image.load("data/images/tiles/large_decor.png").convert(), [32, 32]),
             "small_decor": self.load_sheet(pygame.image.load("data/images/tiles/small_decor.png").convert(), [12, 12]),
             "blaster": self.load_sheet(pygame.image.load("data/images/blaster.png"), [21, 21]),
-            "start": [load_image("tiles/start.png")]
+            "start": [load_image("tiles/start.png")],
+            "portal": [load_image("portal.png")]
         }
         self.anchor = load_image("anchor.png")
         # {"start": [x, y], "end": [x, y]}

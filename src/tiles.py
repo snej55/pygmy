@@ -24,11 +24,19 @@ class TileMap:
         self.blasters = []
         self.start_pos = [10, 10]
 
-        self.colors = []
+        self.bar_colors = []
         pxarray = pygame.pixelarray.PixelArray(self.app.assets["tiles/bars"][0])
         for row in pxarray:
             for color in row:
-                self.colors.append(self.app.assets["tiles/bars"][0].unmap_rgb(color))
+                self.bar_colors.append(self.app.assets["tiles/bars"][0].unmap_rgb(color))
+
+        self.portal_colors = [] 
+        pxarray = pygame.pixelarray.PixelArray(self.app.assets["portal"])
+        for row in pxarray:
+            for color in row:
+                self.portal_colors.append(self.app.assets["portal"].unmap_rgb(color))
+
+        self.portal_pos = [0, 0]
     
     def break_bars(self):
         for loc in self.tile_map.copy():
@@ -36,10 +44,10 @@ class TileMap:
                 pos = [int(c) * 8 for c in loc.split(';')]
                 for x in range(8):
                     for y in range(8):
-                        color = self.colors[x + y * 8]
+                        color = self.bar_colors[x + y * 8]
                         if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
                             angle = random.random() * math.pi * 2
-                            speed = random.random() + 0.5
+                            speed = random.random() - 0.5
                             self.app.kickup.append([[pos[0] + x, pos[1] + y], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
                 del self.tile_map[loc]
         self.app.screen_shake = 16
@@ -116,6 +124,9 @@ class TileMap:
         for loc in self.tile_map.copy():
             if self.tile_map[loc]["type"] == "start":
                 self.start_pos = [self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE]
+                del self.tile_map[loc]
+            elif self.tile_map[loc]["type"] == "portal":
+                self.portal_pos = [self.tile_map[loc]["pos"][0] * TILE_SIZE, self.tile_map[loc]["pos"][1] * TILE_SIZE]
                 del self.tile_map[loc]
         
         self.extract_springs()

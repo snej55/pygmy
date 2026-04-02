@@ -55,6 +55,13 @@ class Player:
 
         self.water = False
 
+        for _ in range(random.randint(20, 30)):
+            angle = random.random() * math.pi * 2 
+            speed = random.random() * 0.5
+            pvel = [math.cos(angle) * speed, math.sin(angle) * speed]
+            self.app.particles.append(Particle(self.app, 'feather', self.get_rect().center, pvel, random.randint(0, 7), True))
+            self.app.particles[-1].particle_type = "leaf"
+
     def get_rect(self):
         return pygame.Rect(self.pos.x, self.pos.y, self.dimensions.x, self.dimensions.y)
 
