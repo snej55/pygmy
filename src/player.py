@@ -337,6 +337,7 @@ class Player:
     def die(self):
         self.ad = 0
         self.app.screen_shake = max(self.app.screen_shake, 16)
+        self.app.assets["sfx"]["explosion"].play()
         for _ in range(random.randint(20, 30)):
             angle = random.random() * math.pi * 2 
             speed = random.random() * 0.5

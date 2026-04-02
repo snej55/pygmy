@@ -91,10 +91,21 @@ class App:
             "anchor": load_image("anchor.png"),
             "blaster": load_animation("blaster.png", 21, 21, 4),
             "bullet": load_image("bullet.png"),
-            "portal": load_image("portal.png")
+            "portal": load_image("portal.png"),
+            "sfx": {
+                "countdown": load_sound("countdown.wav"),
+                "explosion": load_sound("explosion_1.wav"),
+                "hit": load_sound("hitHurt.wav"),
+                "hit1": load_sound("hitHurt_1.wav"),
+                "impact": load_sound("impact.wav"),
+                "spring": load_sound("spring.wav"),
+                "water_in": load_sound("water_in.wav"),
+                "water_out": load_sound("water_out.wav")
+            }
         }
 
         self.font = load_font("dogicapixel.ttf")
+        pygame.mixer.music.load(get_script_path() + "data/audio/music/warm_nocturne.ogg", "ogg")
 
         self.noiseTex = self.ctx.texture(self.assets["noise"].get_size(), 4)
         self.noiseTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
@@ -139,6 +150,58 @@ class App:
         self.fade = 0
         self.fade_vel = 0
         self.load_level(0)
+
+        pygame.mixer.music.play(-1)
+
+    def menu(self):
+        while True:
+            for event in pygame.event.get():
+                # just return to quit
+                if event.type == pygame.QUIT:
+                    self.close()
+                    return
+
+                # handle window resizing on desktop
+                if event.type == pygame.VIDEORESIZE:
+                    width, height = event.size 
+                    if width < WIDTH:
+                        width = WIDTH
+                    if height < HEIGHT:
+                        height = HEIGHT
+                    self.ctx.viewport = (0, 0, width, height)
+                    self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
+                    self.screen = pygame.Surface((width // SCALE, height // SCALE))
+                    self.ui_surf = pygame.Surface(((width // UI_SCALE, height // UI_SCALE)))
+                    self.screenTex.release()
+                    self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
+                    self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    self.screenTex.swizzle = "BGRA"
+                    self.screenTex.repeat_x = False
+                    self.screenTex.repeat_y = False
+                    self.uiTex.release()
+                    self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
+                    self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    self.uiTex.sizzle = "BGRA"
+                    self.waterTex.release()
+                    self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
+                    self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+                    self.waterTex.swizzle = "BGRA"
+                    self.water_surf = self.screen.copy()
+                    self.lightTex.release()
+                    self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
+                    self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
+                    self.lightTex.swizzle = "BGRA"
+                    self.lightTex.repeat_x = False
+                    self.lightTex.repeat_y = False
+
+
+            self.screen.fill((255, 0, 0))
+            self.display.blit(pygame.transform.scale(self.screen, self.display.get_size()), (0, 0))
+            pygame.display.flip()
+            pygame.display.set_caption(
+                f"FPS: {self.clock.get_fps() :.1f} Display: {self.screen.get_width()} * {self.screen.get_height()}"
+            )
+            self.clock.tick(144)
     
     def load_level(self, level):
         self.level = level
