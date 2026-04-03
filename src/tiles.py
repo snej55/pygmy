@@ -263,7 +263,7 @@ class TileMap:
         anchor_img = self.app.assets["anchor"]
         for anchor in self.anchors:
             rot_surf = pygame.transform.rotate(anchor_img, anchor["angle"])            
-            surf.blit(rot_surf, (anchor["pos"][0] + int(anchor_img.get_width() / 2) - int(rot_surf.get_width() / 2) - scroll[0], anchor["pos"][1] + int(anchor_img.get_height() / 2) - int(rot_surf.get_height() / 2) - scroll[1]))
+            surf.blit(rot_surf, (anchor["pos"][0] - 10 + int(anchor_img.get_width() / 2) - int(rot_surf.get_width() / 2) - scroll[0], anchor["pos"][1] - 10 + int(anchor_img.get_height() / 2) - int(rot_surf.get_height() / 2) - scroll[1]))
 
     def calculate_light_map(self):
         print("Generating light map...")

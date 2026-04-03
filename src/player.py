@@ -312,10 +312,10 @@ class Player:
         
         r = self.get_rect()
         for anchor in tile_map.anchors:
-            closest_x = max(r.left, min(anchor["pos"][0] + 10, r.right))
-            closest_y = max(r.top, min(anchor["pos"][1] + 10, r.bottom))
+            closest_x = max(r.left, min(anchor["pos"][0], r.right))
+            closest_y = max(r.top, min(anchor["pos"][1], r.bottom))
 
-            if ((anchor["pos"][0] + 10 - closest_x) ** 2 + (anchor["pos"][1] + 10 - closest_y) ** 2 < 100):
+            if ((anchor["pos"][0] - closest_x) ** 2 + (anchor["pos"][1] - closest_y) ** 2 < 100):
                 self.die()
                 return
     
