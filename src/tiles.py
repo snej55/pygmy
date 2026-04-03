@@ -37,22 +37,35 @@ class TileMap:
                 self.portal_colors.append(self.app.assets["portal"].unmap_rgb(color))
 
         self.portal_pos = [0, 0]
+
+        self.bar_locs = []
+    
+    def break_bar(self, loc):
+        pos = [int(c) * 8 for c in loc.split(';')]
+        for x in range(8):
+            for y in range(8):
+                color = self.bar_colors[x + y * 8]
+                if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
+                    angle = random.random() * math.pi * 2
+                    speed = random.random() - 0.5
+                    self.app.kickup.append([[pos[0] + x, pos[1] + y], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
+        del self.tile_map[loc]
+        self.app.screen_shake = 16
+        self.app.slomo = 0.1
+        self.app.assets["sfx"]["break"].play()
     
     def break_bars(self):
         for loc in self.tile_map.copy():
             if self.tile_map[loc]["type"] == "bars":
-                pos = [int(c) * 8 for c in loc.split(';')]
-                for x in range(8):
-                    for y in range(8):
-                        color = self.bar_colors[x + y * 8]
-                        if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
-                            angle = random.random() * math.pi * 2
-                            speed = random.random() - 0.5
-                            self.app.kickup.append([[pos[0] + x, pos[1] + y], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
-                del self.tile_map[loc]
-        self.app.screen_shake = 16
-        self.app.slomo = 0.1
+                self.break_bar(loc)
     
+    def get_bars(self):
+        self.bar_locs = []
+        for loc in self.tile_map:
+            if self.tile_map[loc]["type"] == "bars":
+                self.bar_locs.append(loc)
+        self.bar_locs.sort(key=lambda x: int(x.split(';')[0]))
+
     def extract_springs(self):
         self.springs = []
         spring_locs = []
@@ -134,6 +147,7 @@ class TileMap:
         self.extract_springs()
         self.extract_grass()
         self.extract_blasters()
+        self.get_bars()
         self.calculate_light_map()
     
     def extract_blasters(self):

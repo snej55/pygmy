@@ -52,6 +52,7 @@ class Player:
         self.sliding = 100
         self.down_timer = 0
         self.dash_length = 12
+        self.dash_timer = 0
 
         self.water = False
 
@@ -215,8 +216,9 @@ class Player:
                             self.falling = 6
                             self.jumping = 30
                 
+                self.dash_timer = max(0, self.dash_timer - dt)
                 if self.controls['dashing']:
-                    if self.wall_timer <= 0:
+                    if self.wall_timer <= 0 and self.dash_timer == 0:
                         self.app.screen_shake = max(8, self.app.screen_shake)
                         if self.flip:
                             self.dashing = -55
@@ -224,6 +226,7 @@ class Player:
                             self.dashing = 55
                         self.wall_timer = 10
                         self.app.assets["sfx"]["hit1"].play()
+                        self.dash_timer = 20
                     self.controls["dashing"] = False
                 first = self.dashing
                 if self.dashing < 0:

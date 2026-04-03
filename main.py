@@ -95,6 +95,7 @@ class App:
             "title": load_image("title.png"),
             "sfx": {
                 "countdown": load_sound("countdown.wav"),
+                "break": load_sound("explosion.wav"),
                 "explosion": load_sound("explosion_1.wav"),
                 "hit": load_sound("hitHurt.wav"),
                 "hit1": load_sound("hit_3.wav"),
@@ -157,6 +158,8 @@ class App:
 
         self.fade = 0
         self.fade_vel = 0
+        self.total_time = 0
+        self.start_time = 0
         self.load_level(0)
 
         pygame.mixer.music.play(-1)
@@ -165,8 +168,24 @@ class App:
         self.menu_timer = 0
         self.title_pos = -100
 
-        self.start_time = 0
-        self.end_time = 0
+
+        self.texts = {
+            "0": [
+                "Hello there...",
+                "You appear to have been cooped up in a miserable little prison - with only a decrepit old playground and the sentry next door for company.",
+                "But never fear, you still possess a trick that your guards have not anticipated in their hubris...",
+                "The jail may seem impervious, but the bars of your cell are impotent to contain your gallinaceous might - soon they shall crumble and fall in your domineering aura, allowing you to escape from this dastardly place once and for all!",
+                "Nevertheless, beware! For you have been incarcerated in an isolated outback, and as you vamoose you must navigate the treacherous surroundings, where some of your captors still lurk...",
+                "Will you risk it for the biscuit in a daring escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
+            ]
+        }
+
+        self.text_idx = 0
+        self.text_timer = 0
+        self.box_y = 0
+        self.text_mode = True
+
+        self.bar_timer = 0
 
     def reset_menu(self):
         self.menu_timer = 0
@@ -219,17 +238,17 @@ class App:
 
         self.ui_surf.blit(self.assets["title"], (self.ui_surf.get_width() / 2 - self.assets["title"].get_width() / 2, self.title_pos))
 
-        sec = math.floor(self.end_time - self.start_time) % 60
+        sec = math.floor(self.total_time) % 60
         if sec < 10:
             sec = "0" + str(sec)
         else:
             sec = str(sec)
-        minutes = math.floor((self.end_time - self.start_time) / 60) % 60
+        minutes = math.floor((self.total_time) / 60) % 60
         if minutes < 10:
             minutes = "0" + str(minutes)
         else:
             minutes = str(minutes)
-        hours = math.floor((self.end_time - self.start_time) / 3600) % 60
+        hours = math.floor((self.total_time) / 3600) % 60
         if hours < 10:
             hours = "0" + str(hours)
         else:
@@ -268,6 +287,7 @@ class App:
         self.waterTex.write(self.water_surf.get_view('1'))
     
     def load_level(self, level):
+        self.start_time = time.time()
         self.level = level
         path = "data/maps/" + str(level) + ".json"
         try:
@@ -293,6 +313,13 @@ class App:
         self.follow_pos = self.player.get_rect().center
         self.scroll = pygame.Vector2(0, 0)
         self.screen_shake = 0
+
+        self.text_idx = 0
+        self.text_timer = 0
+        self.box_y = 0
+        self.text_mode = True
+
+        self.bar_timer = 0
     
     def create_shockwave(self, pos):
         self.shockwave_time = 0
@@ -528,27 +555,71 @@ class App:
     def renderUI(self):
         self.ui_surf.fill((0, 0, 0))
         
-        sec = math.floor(time.time() - self.start_time) % 60
+        sec = math.floor(time.time() - self.start_time + self.total_time) % 60
         if sec < 10:
             sec = "0" + str(sec)
         else:
             sec = str(sec)
-        minutes = math.floor((time.time() - self.start_time) / 60) % 60
+        minutes = math.floor((time.time() - self.start_time + self.total_time) / 60) % 60
         if minutes < 10:
             minutes = "0" + str(minutes)
         else:
             minutes = str(minutes)
-        hours = math.floor((time.time() - self.start_time) / 3600) % 60
+        hours = math.floor((time.time() - self.start_time + self.total_time) / 3600) % 60
         if hours < 10:
             hours = "0" + str(hours)
         else:
             hours = str(hours)
         text = f"{hours}:{minutes}:{sec}"
-        text_surf = self.font.render(text, False, (246, 242, 195))
+        text_surf = self.font.render(text, False, (246, 242, 195), (1, 1, 1))
         self.ui_surf.blit(text_surf, (10, 10))
+
+        self.text_mode = self.text_idx < len(self.texts[str(self.level)])
+        if self.text_mode:
+            self.box_y += (1 - self.box_y) * 0.1 * self.dt
+        else:
+            self.box_y += -self.box_y * 0.1 * self.dt
+        box_height = 100
+        padding = 4
+        pygame.draw.rect(self.ui_surf, (22, 13, 19), (0, self.ui_surf.get_height() - box_height * self.box_y, self.ui_surf.get_width(), box_height * self.box_y))
+        pygame.draw.rect(self.ui_surf, (246, 242, 195), (1, self.ui_surf.get_height() - box_height * self.box_y + 1, self.ui_surf.get_width() - 2, box_height * self.box_y - 2), 1)
+
+        text_surf = self.font.render("Press [ENTER] to continue or press [z] to skip narrator", False, (246, 242, 195))
+        self.ui_surf.blit(text_surf, (1 + padding, self.ui_surf.get_height() - box_height * self.box_y + 85))
+
+        self.text_timer += self.dt
+        if self.text_mode:
+            self.start_time = time.time()
+            type_speed = 0.3
+            full_text = self.texts[str(self.level)][self.text_idx]
+            render_text = [""]
+            idx = 0
+            for i in range(min(int(max(0, self.text_timer - 100) * type_speed), len(full_text))):
+                if full_text[i] == " ":
+                    temp = render_text[idx]
+                    break_text = False
+                    for j in range(len(full_text) - i - 1):
+                        if full_text[i + j + 1] == " ":
+                            break_text = False
+                            break
+                        else:
+                            temp += full_text[i + j]
+                        if self.font.size(temp)[0] >= self.ui_surf.get_width() - 2 - padding * 3:
+                            break_text = True
+                            break
+                    if break_text:
+                        render_text.append("")
+                        idx += 1
+
+                render_text[idx] += full_text[i]
+            
+            for i, line in enumerate(render_text):
+                text_surf = self.font.render(line, False, (246, 242, 195), None)
+                self.ui_surf.blit(text_surf, (1 + padding, self.ui_surf.get_height() - box_height * self.box_y + 1 + padding + 10 * i))
 
         self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
         if self.fade == 1:
+            self.total_time += time.time() - self.start_time
             self.fade_vel = -0.02
             self.load_level(self.level + 1)
             self.assets["sfx"]["transition"].play()
@@ -609,6 +680,12 @@ class App:
                     self.lightTex.repeat_y = False
                 if event.type == pygame.KEYDOWN:
                     if self.state == "game":
+                        if event.key == pygame.K_RETURN:
+                            self.text_idx += 1
+                            self.text_timer = 50
+                        elif event.key == pygame.K_z:
+                            self.text_idx = 97123497234
+                            self.text_timer = 50
                         if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
                             self.player.controls["up"] = True
                             self.player.jumping = 0
@@ -621,8 +698,6 @@ class App:
                         elif event.key in {pygame.K_x}:
                             if abs(self.player.dashing) < 20:
                                 self.player.controls['dashing'] = True
-                        elif event.key == pygame.K_b:
-                            self.tile_map.break_bars()
                     elif self.state == "menu" or self.state == "win":
                         if event.key == pygame.K_RETURN:
                             self.fade_vel = 0.02
