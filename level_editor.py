@@ -11,8 +11,8 @@ TILE_SIZE = 8
 # world is split into chunks (size = relative tilesize, actual pixel size = tile_size * chunk_size)
 CHUNK_SIZE = 9
 # level width (relative chunk size, "")
-LEVEL_WIDTH = 20
-LEVEL_HEIGHT = 20
+LEVEL_WIDTH = 40
+LEVEL_HEIGHT = 40
 
 # json map path
 MAP = "data/maps/0.json"

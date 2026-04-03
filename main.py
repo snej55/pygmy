@@ -173,10 +173,10 @@ class App:
             "0": [
                 "Hello there...",
                 "You appear to have been cooped up in a miserable little prison - with only a decrepit old playground and the sentry next door for company.",
-                "But never fear, you still possess a trick that your guards have not anticipated in their hubris...",
-                "The jail may seem impervious, but the bars of your cell are impotent to contain your gallinaceous might - soon they shall crumble and fall in your domineering aura, allowing you to escape from this dastardly place once and for all!",
+                "But never fear, you still possess a trick that your guards have not anticipated in their hubris... one which will those bird-brains shell-shocked!",
+                "The jail may seem impervious, but the bars of your cell are impotent to contain your gallinaceous might - soon they shall shatter and fall in your domineering aura, allowing you to escape from this dastardly place once and for all!",
                 "Nevertheless, beware! For you have been incarcerated in an isolated outback, and as you vamoose you must navigate the treacherous surroundings, where some of your captors still lurk...",
-                "Will you risk it for the biscuit in a daring escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
+                "Will you risk it for the biscuit in a dashing escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
             ]
         }
 
@@ -572,6 +572,9 @@ class App:
             hours = str(hours)
         text = f"{hours}:{minutes}:{sec}"
         text_surf = self.font.render(text, False, (246, 242, 195), (1, 1, 1))
+        time_padding = 3
+        pygame.draw.rect(self.ui_surf, (22, 13, 19), (10 - time_padding, 10 - time_padding, text_surf.get_width() + time_padding * 2, text_surf.get_height() + time_padding * 2), 0, 2)
+        pygame.draw.rect(self.ui_surf, (246, 242, 195), (10 - time_padding - 1, 10 - time_padding - 1, text_surf.get_width() + time_padding * 2 + 2, text_surf.get_height() + time_padding * 2 + 2), 1, 2)
         self.ui_surf.blit(text_surf, (10, 10))
 
         self.text_mode = self.text_idx < len(self.texts[str(self.level)])
@@ -595,6 +598,8 @@ class App:
             render_text = [""]
             idx = 0
             for i in range(min(int(max(0, self.text_timer - 100) * type_speed), len(full_text))):
+                if full_text[i] == "-":
+                    self.text_timer -= type_speed * 0.5 * self.dt
                 if full_text[i] == " ":
                     temp = render_text[idx]
                     break_text = False
@@ -615,7 +620,14 @@ class App:
             
             for i, line in enumerate(render_text):
                 text_surf = self.font.render(line, False, (246, 242, 195), None)
-                self.ui_surf.blit(text_surf, (1 + padding, self.ui_surf.get_height() - box_height * self.box_y + 1 + padding + 10 * i))
+                self.ui_surf.blit(text_surf, (1 + padding, self.ui_surf.get_height() - box_height * self.box_y + 1 + padding + 12 * i))
+            
+            if (self.text_timer - 100) * type_speed > len(full_text):
+                pygame.draw.rect(self.ui_surf, (246, 242, 195), (1 + padding + text_surf.get_width() + 2, self.ui_surf.get_height() - box_height * self.box_y + 1 + padding + 12 * idx, 5, 8))
+            else:
+                if time.time() * 0.2 % type_speed * 2 < type_speed:
+                    pygame.draw.rect(self.ui_surf, (246, 242, 195), (1 + padding + text_surf.get_width() + 2, self.ui_surf.get_height() - box_height * self.box_y + 1 + padding + 12 * idx, 5, 8))
+
 
         self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
         if self.fade == 1:
@@ -682,7 +694,7 @@ class App:
                     if self.state == "game":
                         if event.key == pygame.K_RETURN:
                             self.text_idx += 1
-                            self.text_timer = 50
+                            self.text_timer = 100
                         elif event.key == pygame.K_z:
                             self.text_idx = 97123497234
                             self.text_timer = 50
