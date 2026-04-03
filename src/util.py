@@ -28,7 +28,7 @@ def load_images(path):
 def load_sound(path) -> pygame.mixer.Sound:
     print(f"Loaded sound from `{get_script_path() + BASE_AUDIO_PATH + path}`")
     sound = pygame.mixer.Sound(get_script_path() + BASE_AUDIO_PATH + path)
-    sound.set_volume(0.25)
+    sound.set_volume(0.4)
     return sound
 
 

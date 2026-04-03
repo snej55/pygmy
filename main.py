@@ -13,7 +13,7 @@ pygame.font.init()
 
 # window dimensions and scaling
 WIDTH, HEIGHT = 1200, 900
-SCALE = 4
+SCALE = 5
 UI_SCALE = 2
 SCROLL_LIMIT = 8
 SMOKE_DELAY = 6
@@ -41,7 +41,7 @@ class App:
 
         self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
         self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-        self.uiTex.sizzle = "BGRA"
+        self.uiTex.swizzle = "BGRA"
 
         self.water_surf = self.screen.copy()
         self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
@@ -92,6 +92,7 @@ class App:
             "blaster": load_animation("blaster.png", 21, 21, 4),
             "bullet": load_image("bullet.png"),
             "portal": load_image("portal.png"),
+            "title": load_image("title.png"),
             "sfx": {
                 "countdown": load_sound("countdown.wav"),
                 "explosion": load_sound("explosion_1.wav"),
@@ -160,60 +161,121 @@ class App:
 
         pygame.mixer.music.play(-1)
 
+        self.state = "menu"
+        self.menu_timer = 0
+        self.title_pos = -100
+
+        self.start_time = 0
+        self.end_time = 0
+
+    def reset_menu(self):
+        self.menu_timer = 0
+        self.title_pos = -100
+
     def menu(self):
-        while True:
-            for event in pygame.event.get():
-                # just return to quit
-                if event.type == pygame.QUIT:
-                    self.close()
-                    return
+        self.menu_timer += self.dt
+        self.title_pos += (self.ui_surf.get_height() * 0.25 - self.title_pos) * 0.5 * self.dt 
+        self.ui_surf.fill((0, 0, 0))
 
-                # handle window resizing on desktop
-                if event.type == pygame.VIDEORESIZE:
-                    width, height = event.size 
-                    if width < WIDTH:
-                        width = WIDTH
-                    if height < HEIGHT:
-                        height = HEIGHT
-                    self.ctx.viewport = (0, 0, width, height)
-                    self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
-                    self.screen = pygame.Surface((width // SCALE, height // SCALE))
-                    self.ui_surf = pygame.Surface(((width // UI_SCALE, height // UI_SCALE)))
-                    self.screenTex.release()
-                    self.screenTex = self.ctx.texture(self.screen.get_size(), 4)
-                    self.screenTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-                    self.screenTex.swizzle = "BGRA"
-                    self.screenTex.repeat_x = False
-                    self.screenTex.repeat_y = False
-                    self.uiTex.release()
-                    self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
-                    self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-                    self.uiTex.sizzle = "BGRA"
-                    self.waterTex.release()
-                    self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
-                    self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-                    self.waterTex.swizzle = "BGRA"
-                    self.water_surf = self.screen.copy()
-                    self.lightTex.release()
-                    self.lightTex = self.ctx.texture(self.get_grid_size(), 4)
-                    self.lightTex.filter = (moderngl.LINEAR, moderngl.LINEAR)
-                    self.lightTex.swizzle = "BGRA"
-                    self.lightTex.repeat_x = False
-                    self.lightTex.repeat_y = False
+        self.ui_surf.blit(self.assets["title"], (self.ui_surf.get_width() / 2 - self.assets["title"].get_width() / 2, self.title_pos))
 
+        text = "A fowl little adventure"
+        render_text = ""
+        for i in range(min(int(max(0, self.menu_timer - 100) * 0.2), len(text))):
+            render_text += text[i]
+        text_surf = self.font.render(render_text, False, (246, 242, 195))
+        self.ui_surf.blit(text_surf, (self.ui_surf.get_width() / 2 - self.font.size(text)[0] / 2, self.ui_surf.get_height() * 0.25 + 50))
 
-            self.screen.fill((255, 0, 0))
-            self.display.blit(pygame.transform.scale(self.screen, self.display.get_size()), (0, 0))
-            pygame.display.flip()
-            pygame.display.set_caption(
-                f"FPS: {self.clock.get_fps() :.1f} Display: {self.screen.get_width()} * {self.screen.get_height()}"
-            )
-            self.clock.tick(144)
+        if time.time() % 2 > 0.5:
+            text_surf = self.font.render("[hit ENTER to start]", False, (246, 242, 195))
+            self.ui_surf.blit(text_surf, (self.ui_surf.get_width() / 2 - text_surf.get_width() / 2, self.ui_surf.get_height() * 0.75))
+        
+        self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
+        if self.fade == 1:
+            self.fade_vel = -0.02
+            self.start_time = time.time()
+            self.state = "game"
+        
+        width = 200
+        if self.fade > 0:
+            if self.fade_vel > 0:
+                for x in range(math.ceil(self.ui_surf.get_width() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width, 0, width / 2, self.ui_surf.get_height() * self.fade * 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width + width / 2, self.ui_surf.get_height() * (1 - self.fade * 2), width / 2, self.ui_surf.get_height() * self.fade * 2))
+            else:
+                for y in range(math.ceil(self.ui_surf.get_height() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (0, y * width, self.ui_surf.get_width() * self.fade * 2, width / 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (self.ui_surf.get_width() * (1 - self.fade * 2), y * width + width / 2, self.ui_surf.get_width() * self.fade * 2, width / 2))
+        
+        self.uiTex.write(self.ui_surf.get_view('1'))
+        self.water_surf.fill((0, 0, 0))
+        # self.update_fireflies([0, 0])
+        self.waterTex.write(self.water_surf.get_view('1'))
+    
+    def win(self):
+        self.menu_timer += self.dt
+        self.title_pos += (self.ui_surf.get_height() * 0.25 - self.title_pos) * 0.5 * self.dt 
+        self.ui_surf.fill((0, 0, 0))
+
+        self.ui_surf.blit(self.assets["title"], (self.ui_surf.get_width() / 2 - self.assets["title"].get_width() / 2, self.title_pos))
+
+        sec = math.floor(self.end_time - self.start_time) % 60
+        if sec < 10:
+            sec = "0" + str(sec)
+        else:
+            sec = str(sec)
+        minutes = math.floor((self.end_time - self.start_time) / 60) % 60
+        if minutes < 10:
+            minutes = "0" + str(minutes)
+        else:
+            minutes = str(minutes)
+        hours = math.floor((self.end_time - self.start_time) / 3600) % 60
+        if hours < 10:
+            hours = "0" + str(hours)
+        else:
+            hours = str(hours)
+        text = f"You escaped... in {hours}:{minutes}:{sec}"
+        render_text = ""
+        for i in range(min(int(max(0, self.menu_timer - 100) * 0.2), len(text))):
+            render_text += text[i]
+        text_surf = self.font.render(render_text, False, (246, 242, 195))
+        self.ui_surf.blit(text_surf, (self.ui_surf.get_width() / 2 - self.font.size(text)[0] / 2, self.ui_surf.get_height() * 0.25 + 50))
+
+        if time.time() % 2 > 0.5:
+            text_surf = self.font.render("[hit ENTER to attempt again]", False, (246, 242, 195))
+            self.ui_surf.blit(text_surf, (self.ui_surf.get_width() / 2 - text_surf.get_width() / 2, self.ui_surf.get_height() * 0.75))
+        
+        self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
+        if self.fade == 1:
+            self.fade_vel = -0.02
+            self.state = "menu"
+        
+        width = 200
+        if self.fade > 0:
+            if self.fade_vel > 0:
+                for x in range(math.ceil(self.ui_surf.get_width() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width, 0, width / 2, self.ui_surf.get_height() * self.fade * 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (x * width + width / 2, self.ui_surf.get_height() * (1 - self.fade * 2), width / 2, self.ui_surf.get_height() * self.fade * 2))
+            else:
+                for y in range(math.ceil(self.ui_surf.get_height() / width)):
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (0, y * width, self.ui_surf.get_width() * self.fade * 2, width / 2))
+                    pygame.draw.rect(self.ui_surf, (1, 1, 1), (self.ui_surf.get_width() * (1 - self.fade * 2), y * width + width / 2, self.ui_surf.get_width() * self.fade * 2, width / 2))
+        
+        self.uiTex.write(self.ui_surf.get_view('1'))
+
+        self.water_surf.fill((0, 0, 0))
+        # self.update_fireflies([0, 0])
+        self.waterTex.write(self.water_surf.get_view('1'))
     
     def load_level(self, level):
         self.level = level
         path = "data/maps/" + str(level) + ".json"
-        self.tile_map.load(path)
+        try:
+            self.tile_map.load(path)
+        except FileNotFoundError:
+            self.load_level(0)
+            self.state = "win"
+            self.end_time = time.time()
         self.leaf_spawners = []
         for tree in self.tile_map.extract([('large_decor', 0), ('large_decor', 1), ('large_decor', 2), ('large_decor', 3)], keep=True):
             if tree['type'] == 'large_decor':
@@ -332,11 +394,6 @@ class App:
         
     # put all the game stuff here
     def update(self):
-        # update delta time
-        self.slomo += (1 - self.slomo) * 0.3 * self.dt
-        self.dt = (time.time() - self.last_time) * 60 * self.slomo
-        self.dt = min(self.dt, 3)
-        self.last_time = time.time()
         self.fade_timer += self.dt
         if 40 < self.fade_timer < 100:
             self.fade_timer = 200
@@ -370,7 +427,6 @@ class App:
         self.prog["screenShake"].value = screen_shake_offset[0] * 0.01;
 
         self.screen_shake = max(0, self.screen_shake - 1 * self.dt)
-        self.screen.fill((0, 0, 0))
 
         self.tile_map.draw_decor(self.screen, render_scroll)
         self.tile_map.draw(self.screen, render_scroll)
@@ -472,7 +528,24 @@ class App:
     def renderUI(self):
         self.ui_surf.fill((0, 0, 0))
         
-        self.ui_surf.blit(self.font.render("Hello World", False, (255, 255, 255), None), (10, 10))
+        sec = math.floor(time.time() - self.start_time) % 60
+        if sec < 10:
+            sec = "0" + str(sec)
+        else:
+            sec = str(sec)
+        minutes = math.floor((time.time() - self.start_time) / 60) % 60
+        if minutes < 10:
+            minutes = "0" + str(minutes)
+        else:
+            minutes = str(minutes)
+        hours = math.floor((time.time() - self.start_time) / 3600) % 60
+        if hours < 10:
+            hours = "0" + str(hours)
+        else:
+            hours = str(hours)
+        text = f"{hours}:{minutes}:{sec}"
+        text_surf = self.font.render(text, False, (246, 242, 195))
+        self.ui_surf.blit(text_surf, (10, 10))
 
         self.fade = min(1, max(0, self.fade + self.fade_vel * self.dt))
         if self.fade == 1:
@@ -522,7 +595,7 @@ class App:
                     self.uiTex.release()
                     self.uiTex = self.ctx.texture(self.ui_surf.get_size(), 4)
                     self.uiTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-                    self.uiTex.sizzle = "BGRA"
+                    self.uiTex.swizzle = "BGRA"
                     self.waterTex.release()
                     self.waterTex = self.ctx.texture(self.screen.get_size(), 4)
                     self.waterTex.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -535,33 +608,50 @@ class App:
                     self.lightTex.repeat_x = False
                     self.lightTex.repeat_y = False
                 if event.type == pygame.KEYDOWN:
-                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
-                        self.player.controls["up"] = True
-                        self.player.jumping = 0
-                    elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
-                        self.player.controls["down"] = True
-                    elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
-                        self.player.controls["right"] = True
-                    elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
-                        self.player.controls["left"] = True
-                    elif event.key in {pygame.K_x}:
-                        if abs(self.player.dashing) < 20:
-                            self.player.controls['dashing'] = True
-                    elif event.key == pygame.K_b:
-                        self.tile_map.break_bars()
+                    if self.state == "game":
+                        if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
+                            self.player.controls["up"] = True
+                            self.player.jumping = 0
+                        elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
+                            self.player.controls["down"] = True
+                        elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
+                            self.player.controls["right"] = True
+                        elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
+                            self.player.controls["left"] = True
+                        elif event.key in {pygame.K_x}:
+                            if abs(self.player.dashing) < 20:
+                                self.player.controls['dashing'] = True
+                        elif event.key == pygame.K_b:
+                            self.tile_map.break_bars()
+                    elif self.state == "menu" or self.state == "win":
+                        if event.key == pygame.K_RETURN:
+                            self.fade_vel = 0.02
+                            self.assets["sfx"]["transition"].play()
                 if event.type == pygame.KEYUP:
-                    if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
-                        self.player.controls["up"] = False
-                    elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
-                        self.player.controls["down"] = False
-                    elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
-                        self.player.controls["right"] = False
-                    elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
-                        self.player.controls["left"] = False
+                    if self.state == "game":
+                        if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
+                            self.player.controls["up"] = False
+                        elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
+                            self.player.controls["down"] = False
+                        elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
+                            self.player.controls["right"] = False
+                        elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
+                            self.player.controls["left"] = False
 
             # update game
-            self.update()
-            self.renderUI()
+            # update delta time
+            self.slomo += (1 - self.slomo) * 0.3 * self.dt
+            self.dt = (time.time() - self.last_time) * 60 * self.slomo
+            self.dt = min(self.dt, 3)
+            self.last_time = time.time()
+            self.screen.fill((0, 0, 0))
+            if self.state == "game":
+                self.update()
+                self.renderUI()
+            elif self.state == "menu":
+                self.menu()
+            else:
+                self.win()
 
             self.screenTex.write(self.screen.get_view('1'))
             self.screenTex.use(0)
@@ -586,4 +676,5 @@ class App:
             self.clock.tick(144)
 
 if __name__ == "__main__":
+    App().menu()
     App().run()

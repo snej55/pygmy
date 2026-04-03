@@ -22,6 +22,8 @@ uniform float distortion = 5.0;
 uniform float fogStrength = 0.2;
 uniform float screenShake = 0.0;
 
+uniform vec3 tint = vec3(0.65, 0.6, 0.59);
+
 void main()
 {
     vec4 ui = texture(uiTex, TexCoord);
@@ -107,6 +109,6 @@ void main()
         light = vec3(1.0);
     }
 
-    vec3 diffuse = mix(vec3(0.65, 0.6, 0.59), tex.rgb * light, 1.0 - pow(pNoise + fogStrength, 6.0));
+    vec3 diffuse = mix(tint, tex.rgb * light, 1.0 - pow(pNoise + fogStrength, 6.0));
     FragColor = vec4(diffuse + water * 0.6, 1.0);
 }
