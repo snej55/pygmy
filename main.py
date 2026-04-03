@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(3)
+        self.load_level(5)
 
         pygame.mixer.music.play(-1)
 
@@ -179,17 +179,22 @@ class App:
                 "Nevertheless, beware! For you have been incarcerated in an isolated outback, and as you vamoose you must navigate the treacherous surroundings, where some of your captors still lurk...",
                 "Will you risk it for the biscuit in a dashing escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
             ], "1": [
-                "You escaped! You're not out of the woods yet though - the terrain looks hostile and there's another obnoxious guard waiting to poach any unsuspecting escapees!"
+                "You escaped! You're not out of the woods yet though - this terrain doesn't look and there's another obnoxious guard waiting to poach any unsuspecting escapees!"
             ], "2": [
-
+                "I hope you don't mind getting wet!"
             ],
-            "3": []
+            "3": ["You might need to climb a bit now... time to claim the higher ground!"],
+            "4": ["It's looking a bit barren here - and a bit more hostile."],
+            "5": ["Still easy going for now, but is it getting a bit more claustrophobic? These caves are getting tighter... almost like it's slowly digesting you."]
         }
 
         self.titles = [
             "The Prison",
             "The Forest: P1",
-            "The Forest: P2"
+            "The Forest: P2",
+            "The Forest: P3",
+            "The Wastelands: P1",
+            "The Wastelands: P2"
         ]
 
         self.text_idx = 0
@@ -613,7 +618,7 @@ class App:
         self.text_timer += self.dt
         if self.text_mode:
             self.start_time = time.time()
-            type_speed = 0.3
+            type_speed = 0.6
             full_text = self.texts[str(self.level)][self.text_idx]
             render_text = [""]
             idx = 0
