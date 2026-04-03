@@ -7,7 +7,7 @@ from .blaster import Blaster
 
 TILE_SIZE = 8
 OFFSETS = {(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)}
-PHYSICS_TILES = {"grass", "bricks", "wood", "autumn", "bars"}
+PHYSICS_TILES = {"grass", "bricks", "wood", "autumn", "bars", "marsh"}
 DANGER_TILES = ["spikes"]
 
 class TileMap:
@@ -50,9 +50,10 @@ class TileMap:
                     speed = random.random() - 0.5
                     self.app.kickup.append([[pos[0] + x, pos[1] + y], [math.cos(angle) * speed, math.sin(angle) * speed], 1, color])
         del self.tile_map[loc]
-        self.app.screen_shake = 16
+        self.app.screen_shake = 8
         self.app.slomo = 0.1
         self.app.assets["sfx"]["break"].play()
+        self.app.create_shockwave((pos[0] + 4, pos[1] + 4))
     
     def break_bars(self):
         for loc in self.tile_map.copy():

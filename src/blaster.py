@@ -3,7 +3,7 @@ import pygame, math, random, time
 from .anim import Anim
 from .sparks import Spark
 
-INTERVAL = 120
+INTERVAL = 100
 
 class Blaster:
     def __init__(self, app, pos):
@@ -21,7 +21,7 @@ class Blaster:
     def shoot(self):
         for i in range(4):
             angle = self.angle + i * math.pi * 0.5
-            speed = 2
+            speed = 5
             self.bullets.append([[self.pos[0] + 10 + 9 * math.cos(angle), self.pos[1] + 10 + 9 * math.sin(angle)], angle, speed, 0])
             for _ in range(random.randint(3, 4)):
                 self.app.sparks.append(Spark([self.pos[0] + 10 + 9 * math.cos(angle), self.pos[1] + 10 + 9 * math.sin(angle)], angle + random.random() - 0.5, random.random() + 0.5, (246, 242, 195)))

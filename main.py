@@ -65,6 +65,7 @@ class App:
         # load assets
         self.assets = {
             "tiles/grass": load_tile_imgs("tiles/grass.png", TILE_SIZE),
+            "tiles/marsh": load_tile_imgs("tiles/marsh.png", TILE_SIZE),
             "tiles/bricks": load_tile_imgs("tiles/bricks.png", TILE_SIZE),
             "tiles/wood": load_tile_imgs("tiles/wood.png", TILE_SIZE),
             "tiles/autumn": load_tile_imgs("tiles/autumn.png", TILE_SIZE),
@@ -73,6 +74,7 @@ class App:
             "tiles/bars": load_animation("tiles/bars.png", 8, 8, 1),
             "tiles/large_decor": load_animation("tiles/large_decor.png", 32, 32, 5),
             "tiles/small_decor": load_animation("tiles/small_decor.png", 12, 12, 4),
+            "tiles/big_tree": load_animation("tiles/big_tree.png", 8, 8, 38),
             "player/idle": load_animation("player/idle.png", 8, 8, 6),
             "player/run": load_animation("player/run.png", 8, 8, 4),
             "player/jump": load_animation("player/jump.png", 8, 8, 3),
@@ -160,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(0)
+        self.load_level(3)
 
         pygame.mixer.music.play(-1)
 
@@ -168,17 +170,27 @@ class App:
         self.menu_timer = 0
         self.title_pos = -100
 
-
         self.texts = {
             "0": [
                 "Hello there...",
-                "You appear to have been cooped up in a miserable little prison - with only a decrepit old playground and the sentry next door for company.",
-                "But never fear, you still possess a trick that your guards have not anticipated in their hubris... one which will those bird-brains shell-shocked!",
+                "You appear to have been cooped up in a miserable little prison - with only a decrepit old playground and the lovely sentry next door for company.",
+                "But never fear, you still possess one trick that your guards have not anticipated in their hubris... one which will leave those bird-brains shell-shocked!",
                 "The jail may seem impervious, but the bars of your cell are impotent to contain your gallinaceous might - soon they shall shatter and fall in your domineering aura, allowing you to escape from this dastardly place once and for all!",
                 "Nevertheless, beware! For you have been incarcerated in an isolated outback, and as you vamoose you must navigate the treacherous surroundings, where some of your captors still lurk...",
                 "Will you risk it for the biscuit in a dashing escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
-            ]
+            ], "1": [
+                "You escaped! You're not out of the woods yet though - the terrain looks hostile and there's another obnoxious guard waiting to poach any unsuspecting escapees!"
+            ], "2": [
+
+            ],
+            "3": []
         }
+
+        self.titles = [
+            "The Prison",
+            "The Forest: P1",
+            "The Forest: P2"
+        ]
 
         self.text_idx = 0
         self.text_timer = 0
@@ -192,6 +204,7 @@ class App:
         self.title_pos = -100
 
     def menu(self):
+        self.total_time = 0
         self.menu_timer += self.dt
         self.title_pos += (self.ui_surf.get_height() * 0.25 - self.title_pos) * 0.5 * self.dt 
         self.ui_surf.fill((0, 0, 0))
@@ -425,6 +438,13 @@ class App:
         if 40 < self.fade_timer < 100:
             self.fade_timer = 200
             self.fade_vel = 0.02
+        
+        if not self.text_mode and len(self.tile_map.bar_locs):
+            self.bar_timer += self.dt
+            if self.bar_timer > 60:
+                self.tile_map.break_bar(self.tile_map.bar_locs[0])
+                self.tile_map.bar_locs.pop(0)
+                self.bar_timer = 0
 
         self.player.update(self.dt, self.tile_map)
         self.tile_map.update_springs(self.dt, self.player)

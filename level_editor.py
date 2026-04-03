@@ -15,10 +15,10 @@ LEVEL_WIDTH = 40
 LEVEL_HEIGHT = 40
 
 # json map path
-MAP = "data/maps/0.json"
+MAP = "data/maps/4.json"
 
 # tile sets that can be autotiled
-AUTO_TILE_TYPES = {"grass", "bricks", "wood", "autumn"}
+AUTO_TILE_TYPES = {"grass", "bricks", "wood", "autumn", "marsh"}
 AUTO_TILE_MAP = {'0011': 1, '1011': 2, '1001': 3, '0001': 4, '0111': 5, '1111': 6, '1101': 7, '0101': 8,
                 '0110': 9, '1110': 10, '1100': 11, '0100': 12, '0010': 13, '1010': 14, '1000': 15, '0000': 16}
 
@@ -54,9 +54,11 @@ class Editor:
         # assets
         self.assets = {
             "grass": self.load_tileset(pygame.image.load("data/images/tiles/grass.png").convert()),
+            "marsh": self.load_tileset(pygame.image.load("data/images/tiles/marsh.png").convert()),
             "autumn": self.load_tileset(pygame.image.load("data/images/tiles/autumn.png").convert()),
             "bricks": self.load_tileset(pygame.image.load("data/images/tiles/bricks.png").convert()),
             "bars": load_animation("tiles/bars.png", 8, 8, 1),
+            "big_tree": load_animation("tiles/big_tree.png", 8, 8, 38),
             "wood": self.load_tileset(pygame.image.load("data/images/tiles/wood.png").convert()),
             "spring": [load_image("tiles/spring.png")],
             "grass_key": [load_image("tiles/grass_key.png")],
@@ -136,7 +138,7 @@ class Editor:
         except FileNotFoundError:
             self.create_new(path)
             self.load(path)
-
+    
     # save level data
     def save(self, path):
         with open(path, "w") as f:
@@ -274,6 +276,36 @@ class Editor:
             tiles.append(tile_surf)
         return tiles
 
+    def flood_fill(self, mouse_pos):
+        level_surf = pygame.Surface((LEVEL_WIDTH * CHUNK_SIZE, LEVEL_HEIGHT * CHUNK_SIZE))
+        level_surf.fill((0, 0, 0))
+        for loc in self.tile_map:
+            pos = [int(c) for c in loc.split(';')]
+            tile_type = 0
+            for i, t in enumerate(self.tile_list):
+                if t == self.tile_map[loc]["type"]:
+                    tile_type = i
+            level_surf.set_at((pos[0], pos[1]), (tile_type, self.tile_map[loc]["variant"], 1))
+        
+        pygame.draw.flood_fill(level_surf, (self.tile_type, self.tile_variant, 1), (mouse_pos[0], mouse_pos[1]))
+
+        pxarray = pygame.pixelarray.PixelArray(level_surf)
+        for x, row in enumerate(pxarray):
+            for y, color in enumerate(row):
+                c = level_surf.unmap_rgb(color)
+                if c != (0, 0, 0, 255) and c != (0, 0, 0, 0):
+                    self.tile_map[f"{x};{y}"] = {"type": self.tile_list[c[0]], "variant": c[1]}
+
+    def eyedrop(self, mouse_pos):
+        start_loc = f"{mouse_pos[0]};{mouse_pos[1]}"
+        if start_loc in self.tile_map:
+            self.tile_variant = self.tile_map[start_loc]["variant"]
+            tile_type = 0
+            for i, t in enumerate(self.tile_list):
+                if t == self.tile_map[start_loc]["type"]:
+                    tile_type = i
+            self.tile_type = tile_type
+
     def update(self):
         self.scroll.x += (int(self.controls["right"]) - int(self.controls["left"])) * 5 * self.dt
         self.scroll.y += (int(self.controls["down"]) - int(self.controls["up"])) * 5 * self.dt
@@ -353,6 +385,13 @@ class Editor:
                         self.auto_tile()
                     elif event.key == pygame.K_o:
                         self.save(MAP)
+                    elif event.key == pygame.K_i:
+                        mouse_pos = pygame.mouse.get_pos()
+                        mouse_pos = [
+                            math.floor((mouse_pos[0] / SCALE + self.scroll.x) / TILE_SIZE),
+                            math.floor((mouse_pos[1] / SCALE + self.scroll.y) / TILE_SIZE)
+                        ]
+                        self.eyedrop(mouse_pos)
                     elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         self.controls["right"] = True
                     elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
@@ -371,6 +410,13 @@ class Editor:
                         self.mode = "normal"
                     elif event.key == pygame.K_l:
                         self.mode = "anchor"
+                    elif event.key == pygame.K_f:
+                        mouse_pos = pygame.mouse.get_pos()
+                        mouse_pos = [
+                            math.floor((mouse_pos[0] / SCALE + self.scroll.x) / TILE_SIZE),
+                            math.floor((mouse_pos[1] / SCALE + self.scroll.y) / TILE_SIZE)
+                        ]
+                        self.flood_fill(mouse_pos)
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                         self.controls["right"] = False
