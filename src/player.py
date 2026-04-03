@@ -94,6 +94,8 @@ class Player:
                                     speed = random.random() + 0.2
                                     angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.left + 1, r.centery], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                        # if abs(self.movement.x) > 1:
+                        #     self.app.assets["sfx"]["land"].play()
                         self.pos.x = r.x
                         self.movement.x = 0
                         self.rebound.x = 0
@@ -119,6 +121,8 @@ class Player:
                                     speed = random.random() + 0.2
                                     angle = math.atan2(-self.movement.y, -self.movement.x) + random.random() * math.pi * 0.25
                                     self.app.kickup.append([[r.centerx, r.top + 1], [math.cos(angle) * speed, math.sin(angle) * speed], random.random() * 0.05 + 0.95, random.choice([(144, 75, 65), (209, 147, 95)])])
+                        if abs(self.movement.y) > 1:
+                            self.app.assets["sfx"]["land"].play()
                         self.movement.y = 0
                         self.pos.y = r.y
                         self.rebound.y = 0
@@ -197,12 +201,14 @@ class Player:
                             self.falling = 8
                             self.jumping = 30
                             self.wall_timer = 12
+                            self.app.assets["sfx"]["walljump"].play()
                         elif not self.flip and self.last_movement[0] > 0:
                             self.rebound.x = -speed
                             self.movement.y = -height
                             self.falling = 8
                             self.jumping = 30
                             self.wall_timer = 12
+                            self.app.assets["sfx"]["walljump"].play()
                     else:
                         if self.falling < 5:
                             self.movement.y = -self.jump_height
@@ -217,6 +223,7 @@ class Player:
                         else:
                             self.dashing = 55
                         self.wall_timer = 10
+                        self.app.assets["sfx"]["hit1"].play()
                     self.controls["dashing"] = False
                 first = self.dashing
                 if self.dashing < 0:

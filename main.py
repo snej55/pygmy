@@ -96,13 +96,18 @@ class App:
                 "countdown": load_sound("countdown.wav"),
                 "explosion": load_sound("explosion_1.wav"),
                 "hit": load_sound("hitHurt.wav"),
-                "hit1": load_sound("hitHurt_1.wav"),
+                "hit1": load_sound("hit_3.wav"),
                 "impact": load_sound("impact.wav"),
-                "spring": load_sound("spring.wav"),
+                "spring": load_sound("turtle.wav"),
                 "water_in": load_sound("water_in.wav"),
-                "water_out": load_sound("water_out.wav")
+                "water_out": load_sound("water_out.wav"),
+                "shoot": load_sound("shoot.wav"),
+                "transition": load_sound("transition.wav"),
+                "walljump": load_sound("walljump.wav"),
+                "land": load_sound("land.wav")
             }
         }
+        self.assets["sfx"]["impact"].set_volume(0.5)
 
         self.font = load_font("dogicapixel.ttf")
         pygame.mixer.music.load(get_script_path() + "data/audio/music/warm_nocturne.ogg", "ogg")
@@ -146,6 +151,8 @@ class App:
         self.shockwave_center = [0, 0]
         self.player = Player(self, [6, 8], self.tile_map.start_pos)
         self.follow_pos = self.player.get_rect().center
+
+        self.fade_timer = 1000
 
         self.fade = 0
         self.fade_vel = 0
@@ -328,7 +335,12 @@ class App:
         # update delta time
         self.slomo += (1 - self.slomo) * 0.3 * self.dt
         self.dt = (time.time() - self.last_time) * 60 * self.slomo
+        self.dt = min(self.dt, 3)
         self.last_time = time.time()
+        self.fade_timer += self.dt
+        if 40 < self.fade_timer < 100:
+            self.fade_timer = 200
+            self.fade_vel = 0.02
 
         self.player.update(self.dt, self.tile_map)
         self.tile_map.update_springs(self.dt, self.player)
@@ -366,8 +378,9 @@ class App:
         if self.fade == 0:
             self.screen.blit(self.assets["portal"], (self.tile_map.portal_pos[0] - render_scroll[0], self.tile_map.portal_pos[1] - render_scroll[1] + math.sin(self.time * 0.05) * 4))
         if self.player.get_rect().colliderect(pygame.Rect(self.tile_map.portal_pos[0], self.tile_map.portal_pos[1], 10, 12)):
-            self.fade_vel = 0.02
-            self.screen_shake = 16
+            self.fade_timer = 0
+            self.assets["sfx"]["impact"].play()
+            self.screen_shake = 32
             for i, color in enumerate(self.tile_map.portal_colors):
                 if color != (0, 0, 0, 0) and color != (0, 0, 0, 255):
                     angle = random.random() * math.pi * 2
@@ -415,10 +428,13 @@ class App:
             if water.get_rect().colliderect(self.player.get_rect()):
                 if not self.player.water:
                     self.player.movement *= 0.6
+                    self.assets["sfx"]["water_in"].play()
                 self.player.water = True
                 hit = True
         self.waterTex.write(self.water_surf.get_view('1'))
         if not hit:
+            if self.player.water:
+                self.assets["sfx"]["water_out"].play()
             self.player.water = False
         else:
             for key in self.player.controls:
@@ -462,6 +478,7 @@ class App:
         if self.fade == 1:
             self.fade_vel = -0.02
             self.load_level(self.level + 1)
+            self.assets["sfx"]["transition"].play()
         
         width = 200
         if self.fade > 0:

@@ -76,6 +76,8 @@ class TileMap:
             spring["vel"] += (spring["vel"] * 0.9 - spring["vel"]) * dt
             rect = pygame.Rect(spring["pos"][0] - 1, spring["pos"][1] + spring["offset"], 10, 4)
             if rect.colliderect(player.get_rect()):
+                if self.app.player.movement.y > -3:
+                    self.app.assets["sfx"]["spring"].play()
                 player.movement.y = -4.5
                 spring["offset"] = 4
     

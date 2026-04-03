@@ -16,7 +16,7 @@ class Blaster:
         self.angle = 0
         self.target_angle = 0
         self.shooting = False
-        self.timer = 0
+        self.timer = random.random() * INTERVAL
     
     def shoot(self):
         for i in range(4):
@@ -38,6 +38,9 @@ class Blaster:
         
         if self.anim.finished:
             self.shoot()
+            scr_rect = pygame.Rect(scroll[0], scroll[1], surf.get_width(), surf.get_height())
+            if scr_rect.colliderect(pygame.Rect(self.pos[0], self.pos[1], 21, 21)):
+                self.app.assets["sfx"]["shoot"].play()
             self.anim.reset()
             self.anim.speed = 0.0
         
