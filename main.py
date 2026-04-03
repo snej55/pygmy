@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(5)
+        self.load_level(6)
 
         pygame.mixer.music.play(-1)
 
@@ -185,7 +185,8 @@ class App:
             ],
             "3": ["You might need to climb a bit now... time to claim the higher ground!"],
             "4": ["It's looking a bit barren here - and a bit more hostile."],
-            "5": ["Still easy going for now, but is it getting a bit more claustrophobic? These caves are getting tighter... almost like it's slowly digesting you."]
+            "5": ["Still easy going for now, but is it getting a bit more claustrophobic? These caves are getting tighter... almost like it's slowly digesting you."],
+            "6": ["Right - this is getting a bit eggstreme."]
         }
 
         self.titles = [
