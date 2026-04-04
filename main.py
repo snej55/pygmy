@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(15)
+        self.load_level(0)
 
         pygame.mixer.music.play(-1)
 
@@ -204,7 +204,17 @@ class App:
             "The Forest: P2",
             "The Forest: P3",
             "The Wastelands: P1",
-            "The Wastelands: P2"
+            "The Wastelands: P2",
+            "The Wastelands: P3",
+            "The Wastelands: P4",
+            "The Marsh Pit: P1",
+            "The Marsh Pit: P2",
+            "The Marsh Pit: P3",
+            "The Outback: P1",
+            "The Outback: P2",
+            "The Outback: P3",
+            "The Outback: P4",
+            "The Outback: P5"
         ]
 
         self.text_idx = 0
@@ -612,6 +622,11 @@ class App:
         pygame.draw.rect(self.ui_surf, (246, 242, 195), (10 - time_padding - 1, 10 - time_padding - 1, text_surf.get_width() + time_padding * 2 + 2, text_surf.get_height() + time_padding * 2 + 2), 1, 2)
         self.ui_surf.blit(text_surf, (10, 10))
 
+        text_surf = self.font.render(self.titles[self.level], False, (246, 242, 195), (1, 1, 1))
+        pygame.draw.rect(self.ui_surf, (22, 13, 19), (self.ui_surf.get_width() / 2 - text_surf.get_width() / 2 - time_padding, 10 - time_padding, text_surf.get_width() + time_padding * 2, text_surf.get_height() + time_padding * 2), 0, 2)
+        pygame.draw.rect(self.ui_surf, (246, 242, 195), (self.ui_surf.get_width() / 2 - text_surf.get_width() / 2 - time_padding - 1, 10 - time_padding - 1, text_surf.get_width() + time_padding * 2 + 2, text_surf.get_height() + time_padding * 2 + 2), 1, 2)
+        self.ui_surf.blit(text_surf, (self.ui_surf.get_width() / 2 - text_surf.get_width() / 2, 10))
+
         self.text_mode = self.text_idx < len(self.texts[str(self.level)])
         if self.text_mode:
             self.box_y += (1 - self.box_y) * 0.1 * self.dt
@@ -794,9 +809,7 @@ class App:
             self.vao.render(moderngl.TRIANGLE_STRIP)
 
             pygame.display.flip()
-            pygame.display.set_caption(
-                f"FPS: {self.clock.get_fps() :.1f} Display: {self.screen.get_width()} * {self.screen.get_height()}"
-            )
+            pygame.display.set_caption("Pygmy")
             self.clock.tick(144)
 
 if __name__ == "__main__":
