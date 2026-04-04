@@ -24,7 +24,13 @@ jobs:
 
       - name: PyInstaller build
         run: |
-          pyinstaller --onedir --windowed --target-arch arm64 --collect-all moderngl --add-data "data:data" main.py
+          pyinstaller --onedir --windowed \
+          --target-arch arm64 \
+          --collect-all moderngl \
+          --add-data "data:data" \
+          --add-data "src:src" \
+          --paths . \
+          main.py
 
       - name: Ad-hoc Sign Binary
         run: |
