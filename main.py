@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(11)
+        self.load_level(13)
 
         pygame.mixer.music.play(-1)
 
@@ -179,7 +179,7 @@ class App:
                 "Nevertheless, beware! For you have been incarcerated in an isolated outback, and as you vamoose you must navigate the treacherous surroundings, where some of your captors still lurk...",
                 "Will you risk it for the biscuit in a dashing escape - or will you stay put like a lily-livered chicken? It's an easy choice >:)"
             ], "1": [
-                "You escaped! You're not out of the woods yet though - this terrain doesn't look and there's another obnoxious guard waiting to poach any unsuspecting escapees!"
+                "You escaped! You're not out of the woods yet though - this terrain doesn't look friendly and there's another obnoxious guard waiting to poach any unsuspecting escapees!"
             ], "2": [
                 "I hope you don't mind getting wet!"
             ],
@@ -191,7 +191,9 @@ class App:
             "8": ["It's looking a bit grim here - how will you appoach this one?"],
             "9": ["Try to make sure we have more left than drumsticks."],
             "10": ["It'll take some eggspertise to scramble up this one... just make sure you don't eggcelerate down too fast!"],
-            "11": []
+            "11": ["Time to go for a swim!"],
+            "12": ["This looks familiar..."],
+            "13": ["You'll need some deft footwork for this one - don't rush it!"]
         }
 
         self.titles = [
@@ -723,24 +725,26 @@ class App:
                     self.lightTex.repeat_y = False
                 if event.type == pygame.KEYDOWN:
                     if self.state == "game":
-                        if event.key == pygame.K_RETURN:
-                            self.text_idx += 1
-                            self.text_timer = 100
-                        elif event.key == pygame.K_z:
-                            self.text_idx = 97123497234
-                            self.text_timer = 50
-                        if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
-                            self.player.controls["up"] = True
-                            self.player.jumping = 0
-                        elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
-                            self.player.controls["down"] = True
-                        elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
-                            self.player.controls["right"] = True
-                        elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
-                            self.player.controls["left"] = True
-                        elif event.key in {pygame.K_x}:
-                            if abs(self.player.dashing) < 20:
-                                self.player.controls['dashing'] = True
+                        if self.text_mode:
+                            if event.key == pygame.K_RETURN:
+                                self.text_idx += 1
+                                self.text_timer = 100
+                            elif event.key == pygame.K_z:
+                                self.text_idx = 97123497234
+                                self.text_timer = 50
+                        elif self.player.ad > self.player.death_time:
+                            if event.key in {pygame.K_UP, pygame.K_w, pygame.K_SPACE, pygame.K_k}:
+                                self.player.controls["up"] = True
+                                self.player.jumping = 0
+                            elif event.key in {pygame.K_DOWN, pygame.K_s, pygame.K_j}:
+                                self.player.controls["down"] = True
+                            elif event.key in {pygame.K_RIGHT, pygame.K_d, pygame.K_l}:
+                                self.player.controls["right"] = True
+                            elif event.key in {pygame.K_LEFT, pygame.K_a, pygame.K_h}:
+                                self.player.controls["left"] = True
+                            elif event.key in {pygame.K_x}:
+                                if abs(self.player.dashing) < 20:
+                                    self.player.controls['dashing'] = True
                     elif self.state == "menu" or self.state == "win":
                         if event.key == pygame.K_RETURN:
                             self.fade_vel = 0.02

@@ -395,6 +395,8 @@ class Player:
         self.falling = 100
         self.jumping = 100
         self.app.slomo = 0.05
+        self.dashing = False
+        self.controls["dashing"] = False
 
     def dash(self):
         if not self.dashing:
