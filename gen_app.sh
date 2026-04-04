@@ -16,7 +16,7 @@ else
 fi
 
 cd release/bin
-pyinstaller "../../main.py" --onefile --icon "$icon"
+pyinstaller "../../main.py" --onefile --icon "../icon.ico" --splash ../../splash.png --optimize 2
 cd ..
 
 APPDIR=Pygmy.AppDir

@@ -1,6 +1,5 @@
 # Created by Jens Kromdijk 29/03/2026
 import pygame, sys, time, moderngl, array, random
-import pyi_splash
 
 from src.util import *
 from src.tiles import *
@@ -229,8 +228,6 @@ class App:
         self.text_mode = True
 
         self.bar_timer = 0
-
-        pyi_splash.close()
 
     def reset_menu(self):
         self.menu_timer = 0
