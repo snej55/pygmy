@@ -147,6 +147,8 @@ class App:
         self.sparks = []
         self.smoke = []
         self.fireflies = []
+        self.slime = []
+        self.splat = []
         for _ in range(10):
             # [pos, dir, angle]
             self.fireflies.append([[random.random() * 10000, random.random() * 10000], random.random() * math.pi * 2, random.random() * 10 + 10, random.random() * 4 * random.choice([-1, 1]), random.random() * 50])
@@ -162,7 +164,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(0)
+        self.load_level(13)
 
         pygame.mixer.music.play(-1)
 
@@ -344,6 +346,8 @@ class App:
         self.kickup = []
         self.sparks = []
         self.smoke = []
+        self.slime = []
+        self.splat = []
         self.cinders = PhysicsParticles(self, trail=True, bounce=0.3, explode=True, friction=0.7)
         self.shockwave_time = 1000
         self.shockwave_center = [0, 0]
@@ -436,6 +440,58 @@ class App:
                 spark.draw(self.screen, render_scroll)
             else:
                 self.sparks.pop(i)
+    
+    def update_slime(self, render_scroll):
+        for splat in self.splat.copy():
+            splat[0][0] += splat[1][0] * self.dt
+            if self.tile_map.solid_check(splat[0]):
+                for _ in range(5):
+                    angle = random.random() * math.pi * 2
+                    vel = 0.2
+                    self.slime.append([list(splat[0]), [math.cos(angle) * vel, math.sin(angle) * vel], splat[2]])
+                splat[3] = -1
+            splat[0][1] += splat[1][1] * self.dt
+            if self.tile_map.solid_check(splat[0]):
+                for _ in range(5):
+                    angle = random.random() * math.pi * 2
+                    vel = 0.2
+                    self.slime.append([list(splat[0]), [math.cos(angle) * vel, math.sin(angle) * vel], splat[2]])
+                splat[3] = -1
+            splat[1][1] += 0.14 * self.dt
+            splat[1][0] += (splat[1][0] * 0.995 - splat[1][0]) * self.dt
+            pygame.draw.circle(self.screen, splat[2], [splat[0][0] - render_scroll[0], splat[0][1] - render_scroll[1]], splat[3])
+            splat[3] -= 0.001 * self.dt
+            if splat[3] <= 0:
+                self.splat.remove(splat)
+        for i, slime in sorted(enumerate(self.slime), reverse=True):
+            prev_pos = slime[0].copy()
+            slime[0][0] += slime[1][0] * self.dt
+            slime[0][1] += slime[1][1] * self.dt
+            slime[1][0] += (slime[1][0] * 0.9 - slime[1][0]) * self.dt
+            slime[1][1] += (slime[1][1] * 0.9 - slime[1][1]) * self.dt
+            tile_loc = f"{math.floor(slime[0][0] / TILE_SIZE)};{math.floor(slime[0][1] / TILE_SIZE)}"
+            drawn = 0
+            if tile_loc in self.tile_map.tile_map:
+                target_tile = self.tile_map.tile_map[tile_loc]
+                if target_tile["type"] in PHYSICS_TILES:
+                    img_mask = pygame.mask.from_surface(target_tile["img"])
+                    prev_img_pos = (prev_pos[0]%TILE_SIZE, prev_pos[1]%TILE_SIZE)
+                    img_pos = (slime[0][0]%TILE_SIZE, slime[0][1]%TILE_SIZE)
+                    pygame.draw.line(target_tile["img"], slime[2], prev_img_pos, img_pos)
+                    try:
+                        if not (target_tile["img"].get_at((img_pos[0], img_pos[1] + 1)) == slime[2]):
+                            target_tile["img"].set_at((img_pos[0], img_pos[1] + 1), (22, 19, 35))
+                    except IndexError:
+                        pass
+                    target_tile["img"].blit(img_mask.to_surface(setcolor=(0, 0, 0, 0), unsetcolor=(0, 255, 0)), (0, 0))
+                    target_tile["img"].set_colorkey((0, 255, 0))
+                    drawn = 1
+            if not drawn:
+                pygame.draw.line(self.screen, slime[2], [prev_pos[0] - render_scroll[0], prev_pos[1] - render_scroll[1]], [slime[0][0] - render_scroll[0], slime[0][1] - render_scroll[1]])
+            if abs(slime[1][0]) < 0.1:
+                if abs(slime[1][1]) < 0.1: # (22, 19, 35)
+                    self.slime.pop(i)
+
     
     @staticmethod
     def alpha_surf(dim, alpha, color):
@@ -545,6 +601,7 @@ class App:
         self.update_kickup(render_scroll)
         self.update_sparks(render_scroll)
         self.cinders.update(self.screen, render_scroll)
+        self.update_slime(render_scroll)
 
         self.screen.fblits([self.calc_smoke(smoke, render_scroll) for smoke in self.smoke.copy()])
         

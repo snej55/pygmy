@@ -256,7 +256,7 @@ class TileMap:
                     tile = self.tile_map[loc]
 
                     surf.blit(
-                        self.app.assets[f"tiles/{tile["type"]}"][tile["variant"]],
+                        tile["img"],
                         (x * TILE_SIZE - scroll[0], y * TILE_SIZE - scroll[1]),
                     )
         
