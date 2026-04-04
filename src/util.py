@@ -7,6 +7,11 @@ BASE_AUDIO_PATH = "data/audio/"
 BASE_FONT_PATH = "data/fonts/"
 
 def get_script_path():
+    if getattr(sys, 'frozen', False):
+        bundle_dir = Path(sys.executable).resolve().parent
+        if ".app/Contents/MacOS" in str(bundle_dir):
+            return bundle_dir.parent / "Resources"
+        return str(bundle_dir) + "/"
     return str(Path(sys.argv[0]).resolve().parent) + "/"
 
 def load_font(path, size=8) -> pygame.Font:

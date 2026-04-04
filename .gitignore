@@ -9,3 +9,5 @@
 *.AppImage
 appimagetool
 release/bin/*
+/dist
+/build

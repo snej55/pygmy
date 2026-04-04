@@ -1,5 +1,6 @@
 # Created by Jens Kromdijk 29/03/2026
 import pygame, sys, time, moderngl, array, random
+import pyi_splash
 
 from src.util import *
 from src.tiles import *
@@ -13,7 +14,7 @@ pygame.font.init()
 
 # window dimensions and scaling
 WIDTH, HEIGHT = 1200, 900
-SCALE = 5
+SCALE = 4
 UI_SCALE = 2
 SCROLL_LIMIT = 8
 SMOKE_DELAY = 6
@@ -177,7 +178,7 @@ class App:
 
         self.texts = {
             "0": [
-                "Hello there...",
+                "Hello there! Before you get started (once you've heard the lovely story, after which you can move) please try walljumping and dashing around the playground for a bit. To wall jump, slide along a wall (push yourself against it) and then press up. Now, we can continue...",
                 "You appear to have been cooped up in a miserable little prison - with only a decrepit old playground and the lovely sentry next door for company.",
                 "But never fear, you still possess one trick that your guards have not anticipated in their hubris... one which will leave those bird-brains shell-shocked!",
                 "The jail may seem impervious, but the bars of your cell are impotent to contain your gallinaceous might - soon they shall shatter and fall in your domineering aura, allowing you to escape from this dastardly place once and for all!",
@@ -228,6 +229,8 @@ class App:
         self.text_mode = True
 
         self.bar_timer = 0
+
+        pyi_splash.close()
 
     def reset_menu(self):
         self.menu_timer = 0
@@ -703,7 +706,7 @@ class App:
         self.text_timer += self.dt
         if self.text_mode:
             self.start_time = time.time()
-            type_speed = 0.6
+            type_speed = 0.8
             full_text = self.texts[str(self.level)][self.text_idx]
             render_text = [""]
             idx = 0
