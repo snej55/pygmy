@@ -2,3 +2,10 @@
 *.pyc
 /src/__pycache__/
 /__pycache__
+*.AppDir
+*.zip
+*.7z
+*.tar.gz
+*.AppImage
+appimagetool
+release/bin/*

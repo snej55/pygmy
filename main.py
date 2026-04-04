@@ -26,6 +26,9 @@ class App:
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
         self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
 
+        self.icon = load_image("icon.png")
+        pygame.display.set_icon(self.icon)
+
         # setup moderngl
         self.ctx = None
         self.prog = None
@@ -164,7 +167,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(13)
+        self.load_level(0)
 
         pygame.mixer.music.play(-1)
 
@@ -388,10 +391,10 @@ class App:
         self.ctx = moderngl.create_context()
 
         vert_src = ""
-        with open("data/shaders/screenShader.vert", "r") as f:
+        with open(get_script_path() + "data/shaders/screenShader.vert", "r") as f:
             vert_src = f.read()
         frag_src = ""
-        with open("data/shaders/screenShader.frag", "r") as f:
+        with open(get_script_path() + "data/shaders/screenShader.frag", "r") as f:
             frag_src = f.read()
         self.prog = self.ctx.program(
             vertex_shader=vert_src,
@@ -768,10 +771,10 @@ class App:
                 # handle window resizing on desktop
                 if event.type == pygame.VIDEORESIZE:
                     width, height = event.size 
-                    if width < WIDTH:
-                        width = WIDTH
-                    if height < HEIGHT:
-                        height = HEIGHT
+                    # if width < WIDTH:
+                    #     width = WIDTH
+                    # if height < HEIGHT:
+                    #     height = HEIGHT
                     self.ctx.viewport = (0, 0, width, height)
                     self.display = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
                     self.screen = pygame.Surface((width // SCALE, height // SCALE))
