@@ -30,9 +30,10 @@ jobs:
         run: |
           codesign --force --deep --sign - dist/main.app || true
       
-      - name: Zip
+      - name: Zip Artifact
         run: |
-          zip -r Pygmy-MacOS.zip main.app
+          cd dist
+          zip -r ../Pygmy-MacOS.zip main.app
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
