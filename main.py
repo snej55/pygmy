@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(0)
+        self.load_level(10)
 
         pygame.mixer.music.play(-1)
 
@@ -187,7 +187,10 @@ class App:
             "4": ["It's looking a bit barren here - and a bit more hostile."],
             "5": ["Still easy going for now, but is it getting a bit more claustrophobic? These caves are getting tighter... almost like it's slowly digesting you."],
             "6": ["Right - this is getting a bit eggstreme."],
-            "7": ["You managed to scramble out of that one... don't dice yourself on these sawblades! (tip: press down to drop through platforms)"]
+            "7": ["You managed to scramble out of that one... don't dice yourself on these sawblades! (tip: press down to drop through platforms)"],
+            "8": ["It's looking a bit grim here - how will you appoach this one?"],
+            "9": ["Try to make sure we have more left than drumsticks."],
+            "10": ["It'll take some eggspertise to scramble up this one... just make sure you don't eggcelerate down to0 fast!"]
         }
 
         self.titles = [
