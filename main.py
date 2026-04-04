@@ -193,7 +193,8 @@ class App:
             "10": ["It'll take some eggspertise to scramble up this one... just make sure you don't eggcelerate down too fast!"],
             "11": ["Time to go for a swim!"],
             "12": ["This looks familiar..."],
-            "13": ["You'll need some deft footwork for this one - don't rush it!"]
+            "13": ["You'll need some deft footwork for this one - don't rush it!"],
+            "14": ["It's looking like flappy bird over here!"]
         }
 
         self.titles = [
