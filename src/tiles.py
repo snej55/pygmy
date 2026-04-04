@@ -298,7 +298,7 @@ class TileMap:
         absorb = 0.7
         while len(queue) > 0:
             for tile in queue.copy():
-                self.light_map[f"{tile["pos"][0]};{tile["pos"][1]}"] = tile["attenuation"]
+                self.light_map[str(tile["pos"][0]) + ";" + str(tile["pos"][1])] = tile["attenuation"]
                 for shift in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
                     pos = [tile["pos"][0] + shift[0], tile["pos"][1] + shift[1]]
                     check_loc = f"{pos[0]};{pos[1]}"
