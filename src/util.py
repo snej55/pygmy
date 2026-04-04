@@ -8,6 +8,8 @@ BASE_FONT_PATH = "data/fonts/"
 
 def get_script_path():
     if getattr(sys, 'frozen', False):
+        if hasattr(sys, '_MEIPASS'):
+            return str(Path(sys._MEIPASS)) + "/"
         bundle_dir = Path(sys.executable).resolve().parent
         if ".app/Contents/MacOS" in str(bundle_dir):
             return bundle_dir.parent / "Resources"

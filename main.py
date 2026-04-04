@@ -13,7 +13,7 @@ pygame.font.init()
 
 # window dimensions and scaling
 WIDTH, HEIGHT = 1200, 900
-SCALE = 4
+SCALE = 5
 UI_SCALE = 2
 SCROLL_LIMIT = 8
 SMOKE_DELAY = 6
@@ -21,7 +21,9 @@ SMOKE_DELAY = 6
 class App:
     def __init__(self):
         print(f"Running from `{get_script_path()}`")
-        # no need for separate scaling, pygbag scales canvas automatically
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
         self.display = pygame.display.set_mode((WIDTH, HEIGHT), flags=pygame.RESIZABLE | pygame.OPENGL | pygame.DOUBLEBUF)
         self.screen = pygame.Surface((WIDTH // SCALE, HEIGHT // SCALE))
         self.ui_surf = pygame.Surface(((WIDTH // UI_SCALE, HEIGHT // UI_SCALE)))
