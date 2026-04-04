@@ -162,7 +162,7 @@ class App:
         self.fade_vel = 0
         self.total_time = 0
         self.start_time = 0
-        self.load_level(13)
+        self.load_level(15)
 
         pygame.mixer.music.play(-1)
 
@@ -194,7 +194,8 @@ class App:
             "11": ["Time to go for a swim!"],
             "12": ["This looks familiar..."],
             "13": ["You'll need some deft footwork for this one - don't rush it!"],
-            "14": ["It's looking like flappy bird over here!"]
+            "14": ["It's looking like flappy bird over here!"],
+            "15": ["On to the final stretch... you sure got some eggsercise!"]
         }
 
         self.titles = [
@@ -280,7 +281,7 @@ class App:
             hours = "0" + str(hours)
         else:
             hours = str(hours)
-        text = f"You escaped... in {hours}:{minutes}:{sec}"
+        text = f"You escaped! ...in {hours}:{minutes}:{sec}"
         render_text = ""
         for i in range(min(int(max(0, self.menu_timer - 100) * 0.2), len(text))):
             render_text += text[i]
