@@ -1,6 +1,6 @@
 # Pygmy
 
-This is a quick pygame platformer I made across a week for the HackClub milkyway event. It provides some updates to my old level editor (flood fill, eyedrop - yay!) and also has some fancy postprocessing fx (lighting, shockwaves, fog).
+This is a quick pygame platformer I made across a week for the Hack Club milkyway event. It provides some updates to my old level editor (flood fill, eyedrop - yay!) and also has some fancy postprocessing fx (lighting, shockwaves, fog).
 
 ## How to run:
 
